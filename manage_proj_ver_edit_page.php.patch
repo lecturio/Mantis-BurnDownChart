@@ -1,0 +1,10 @@
+--- manage_proj_ver_edit_page.php	2011-02-03 14:04:47.000000000 +0100
++++ manage_proj_ver_edit_page.php	2011-02-04 13:47:56.000000000 +0100
+@@ -68,6 +68,7 @@
+ 		?>
+ 	</td>
+ </tr>
++<?php event_signal('EVENT_PLUGIN_BURNDOWNCHART_VERSION_DATE_CREATED'); ?>
+ <tr <?php echo helper_alternate_class() ?>>
+ 	<td class="category">
+ 		<?php echo lang_get( 'description' ) ?>

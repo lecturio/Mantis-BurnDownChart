@@ -1,0 +1,6 @@
+<?php
+	$s_plugin_BurnDownChart_title = 'Burn Down Chart';
+	$s_plugin_BurnDownChart_menu  = 'Burn Down Chart';
+	$s_plugin_BurnDownChart_chooseVersion = 'Version auswählen';
+	$s_plugin_BurnDownChart_showBurnDownChart = 'Burn Down Chart anzeigen';
+	$s_plugin_BurnDownChart_dateCreated = 'Startdatum';
