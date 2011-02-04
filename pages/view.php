@@ -76,9 +76,9 @@ $dataLine->set_values($lineData);
 
 $optimalLine = new line();
 $optimalLine->set_colour('#018F00');
-$optimalManDaysPerDay = $totalStoryPoints / ($workingDays - 1);
+$optimalManDaysPerDay = round($totalStoryPoints / $workingDays, 6);
 $optimalLineData = array();
-for ($i = 0; $i < $workingDays; $i++) {
+for ($i = 0; $i <= $workingDays; $i++) {
 	$optimalLineData[] = $totalStoryPoints - $i * $optimalManDaysPerDay;
 }
 $optimalLine->set_values($optimalLineData);
