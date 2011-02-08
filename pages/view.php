@@ -38,7 +38,7 @@ if (!$versionId) {
 
 $version = version_get($versionId);
 $dateCreatedTs = strtotime(version_get_field($versionId, BurnDownChartPlugin::DATE_CREATED_FIELD));
-access_ensure_project_level(config_get('manage_project_threshold'), $version->project_id);
+access_ensure_project_level(config_get('roadmap_view_threshold'), $version->project_id);
 
 $workingDays = round(getWorkingDays($dateCreatedTs, $version->date_order));
 $numberOfIssuesInVersion = getNumberOfIssuesByVersion($version);
