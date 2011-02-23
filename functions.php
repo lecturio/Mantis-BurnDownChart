@@ -149,25 +149,30 @@ function getNumberOfResolvedIssuesByDate($version) {
 function getWorkingDays($startDate, $endDate) {
 	//The total number of days between the two dates. We compute the no. of seconds and divide it to 60*60*24
 	//We add one to inlude both dates in the interval.
-	$days = ($endDate - $startDate) / 86400;
+	$days = round(($endDate - $startDate) / 86400);
 
 	$no_full_weeks = floor($days / 7);
 	$no_remaining_days = fmod($days, 7);
 
 	//It will return 1 if it's Monday,.. ,7 for Sunday
-	$the_first_day_of_week = date("N", strtotime($startDate));
-	$the_last_day_of_week = date("N", strtotime($endDate));
+	$the_first_day_of_week = date("N", $startDate);
+	$the_last_day_of_week = date("N", $endDate);
+
 
 	//---->The two can be equal in leap years when february has 29 days, the equal sign is added here
 	//In the first case the whole interval is within a week, in the second case the interval falls in two weeks.
 	if ($the_first_day_of_week <= $the_last_day_of_week) {
-		if ($the_first_day_of_week <= 6 && 6 <= $the_last_day_of_week) $no_remaining_days--;
-		if ($the_first_day_of_week <= 7 && 7 <= $the_last_day_of_week) $no_remaining_days--;
+		if ($the_first_day_of_week <= 6 && 6 <= $the_last_day_of_week) {
+			$no_remaining_days--;
+		}
+		if ($the_first_day_of_week <= 7 && 7 <= $the_last_day_of_week) {
+			$no_remaining_days--;
+		}
 	}
 	else {
 		if ($the_first_day_of_week <= 6) {
 			//In the case when the interval falls in two weeks, there will be a weekend for sure
-			$no_remaining_days = $no_remaining_days - 2;
+			$no_remaining_days = $no_remaining_days - 3;
 		}
 	}
 
