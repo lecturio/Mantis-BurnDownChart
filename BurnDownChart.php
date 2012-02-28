@@ -25,6 +25,7 @@ class BurnDownChartPlugin extends MantisPlugin {
 	const DATE_CREATED_FIELD = 'date_created';
 	const DATE_RESOLVED_FIELD = 'Date resolved';
 	const MAN_DAYS_FIELD      = 'Story points';
+  const HOURS_REMAINING_FIELD = 'Hours remaining';
 
 	public function register() {
 		$this->name = 'Burn Down Chart';
@@ -104,12 +105,19 @@ class BurnDownChartPlugin extends MantisPlugin {
 	}
 
 	public function install() {
-		$ret = $this->createManDaysCustomField();
-		if ($ret === true) {
-			return $this->createDateResolvedCustomField();
-		}
+    $ret = $this->createManDaysCustomField();
 
-		return false;
+    if ($ret === true)
+    {
+      $ret = $this->createDateResolvedCustomField();
+    }
+
+    if ($ret === true)
+    {
+      $ret = $this->createHoursRemainingCustomField();
+    }
+
+    return $ret;
 	}
 
 	private function createManDaysCustomField() {
@@ -157,6 +165,34 @@ class BurnDownChartPlugin extends MantisPlugin {
 
 		return custom_field_update($id, $definitions);
 	}
+
+  /**
+   * Creates 'Hours remaining' custom field
+   * @return bool
+   */
+  private function createHoursRemainingCustomField()
+  {
+    $id = custom_field_create(self::HOURS_REMAINING_FIELD);
+
+    $definitions = array();
+    $definitions['name']             = self::HOURS_REMAINING_FIELD;
+    $definitions['type']             = '2';
+    $definitions['access_level_r']   = VIEWER;
+    $definitions['access_level_rw']  = DEVELOPER;
+    $definitions['length_min']       = 0;
+    $definitions['length_max']       = 0;
+    $definitions['display_report']   = 1;
+    $definitions['display_update']   = 1;
+    $definitions['display_resolved'] = 0;
+    $definitions['display_closed']   = 0;
+    $definitions['require_report']   = 0;
+    $definitions['require_update']   = 0;
+    $definitions['require_resolved'] = 0;
+    $definitions['require_closed']   = 0;
+    $definitions['filter_by']        = 0;
+
+    return custom_field_update($id, $definitions);
+  }
 
 	public function uninstall() {
 		$id = custom_field_get_id_from_name(self::MAN_DAYS_FIELD);

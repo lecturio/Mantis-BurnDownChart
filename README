@@ -26,7 +26,7 @@ INSTALL
 
 3. Install the plugin in the admin section of MantisBT
 
-4. Goto Manage Custom Fields and edit "Date resolved" and "Story points"
+4. Goto Manage Custom Fields and edit "Date resolved", "Story points" and "Hours Remaining"
    - For each of these fields, link the projects to the file
    - DO NOT rename the field, it won't work otherwise.
 

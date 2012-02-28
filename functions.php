@@ -185,3 +185,76 @@ function getWorkingDays($startDate, $endDate) {
 
 	return $workingDays;
 }
+
+/**
+ * @param int $from
+ * @param int $till
+ * @param array $issues
+ * @return array
+ */
+function getReminingHoursData($from, $till, $issues)
+{
+  $dtFrom = new DateTime(date('Y-m-d', $from));
+  $dtTill = new DateTime(date('Y-m-d', $till));
+
+  // set blank results
+  $result = array();
+  $dtTmp = clone $dtFrom;
+  do
+  {
+    $result[$dtTmp->format('Ymd')] = 0;
+    $dtTmp->modify('+1 day');
+  }
+  while ($dtTmp <= $dtTill);
+
+  // get issues data
+  $issuesData = array();
+  foreach ($issues as $issue)
+  {
+    $history = history_get_events_array($issue['id']);
+
+    $issueData = array();
+    foreach ($history as $event)
+    {
+      if ($event['note'] == BurnDownChartPlugin::HOURS_REMAINING_FIELD)
+      {
+        $value = (float) ereg_replace('[^0-9\.]', '', $event['change']);
+        $dtEvent = new DateTime($event['date']);
+        $dtEvent->setTime(0, 0, 0);
+
+        if ($dtEvent < $dtFrom)
+        {
+          $issueData[$dtFrom->format('Ymd')] = $value;
+        }
+        else if ($dtEvent <= $dtTill)
+        {
+          $issueData[$dtEvent->format('Ymd')] = $value;
+        }
+      }
+    }
+
+    if (!empty($issueData))
+    {
+      $issuesData[] = $issueData;
+    }
+  }
+
+  // merge issues data
+  foreach ($issuesData as $issueData)
+  {
+    $value = 0;
+    $dtTmp = clone $dtFrom;
+    do
+    {
+      if (isset($issueData[$dtTmp->format('Ymd')]))
+      {
+        $value = $issueData[$dtTmp->format('Ymd')];
+      }
+      $result[$dtTmp->format('Ymd')] += $value;
+      $dtTmp->modify('+1 day');
+    }
+    while ($dtTmp <= $dtTill);
+  }
+
+  return array_values($result);
+}
