@@ -19,6 +19,8 @@ INSTALL
 -------
 1. Upload the BurnDownChart folder into the plugins folder
 
+1.a Plugin name allows only alphabetical characters. Name Mantis-BurnDownChart is not valid.
+
 2. Apply the patch for manage_proj_ver_edit_page.php:
    ~/mantis $ patch < plugins/BurnDownChart/manage_proj_ver_edit_page.php.patch
 
