@@ -83,18 +83,26 @@ for ($i = 0; $i <= $workingDays; $i++) {
 }
 $optimalLine->set_values($optimalLineData);
 
-// Hours Remainig chart
-$reminingHoursData = getReminingHoursData($dateCreatedTs, $version->date_order, $issues);
-$reminingHoursLine = new line();
-$reminingHoursLine->set_colour('#CC0707');
-$reminingHoursLine->set_values($reminingHoursData);
-
-$yDiapazon = max(max($optimalLineData), max($lineData), max($reminingHoursData)); // $totalStoryPoints
-$chart = constructChart($version->version, $yDiapazon, $xAxisData);
+$chart = constructChart($version->version, $totalStoryPoints, $xAxisData);
 
 $chart->add_element($optimalLine);
 $chart->add_element($dataLine);
-$chart->add_element($reminingHoursLine);
+
+// Hours reminding chart
+$remainingHoursData = getRemainingHoursData($dateCreatedTs, $version->date_order, $issues);
+// get chart object
+$hoursRemindingChart = constructChart(
+  'Hours reminding ' . $version->version,
+  max($remainingHoursData),
+  $xAxisData
+);
+// create hours remaining
+$remainingHoursLine = new line();
+$remainingHoursLine->set_colour('#CC0707');
+$remainingHoursLine->set_values($remainingHoursData);
+
+$hoursRemindingChart->add_element($remainingHoursLine);
+
 ?>
 <script type="text/javascript"
         src="plugins/BurnDownChart/files/open_flash_chart/js/json/json2.js"></script>
@@ -102,6 +110,7 @@ $chart->add_element($reminingHoursLine);
         src="plugins/BurnDownChart/files/open_flash_chart/js/swfobject.js"></script>
 <script type="text/javascript">
   swfobject.embedSWF('plugins/BurnDownChart/files/open_flash_chart/open-flash-chart.swf', "burnDownChart", "600", "400", "9.0.0");
+  swfobject.embedSWF("plugins/BurnDownChart/files/open_flash_chart/open-flash-chart.swf", "HRBurnDownChart", "600", "400", "9.0.0", "expressInstall.swf", {"get-data": "get_hours_reminding_data"});
 </script>
 <script type="text/javascript">
 
@@ -111,11 +120,18 @@ $chart->add_element($reminingHoursLine);
 
   var data = <?php echo $chart->toPrettyString(); ?>;
 
+  function get_hours_reminding_data() {
+    return JSON.stringify(hoursRemindingData);
+  }
+
+  var hoursRemindingData = <?php echo $hoursRemindingChart->toPrettyString(); ?>;
+
 </script>
 <span class="pagetitle"><?php echo printVersionHeader($version) ?></span>
 <br/>
 <br/>
 <div class="center">
+  <div id="HRBurnDownChart"></div><br /><br />
   <div id="burnDownChart"></div>
 </div>
 <br/>

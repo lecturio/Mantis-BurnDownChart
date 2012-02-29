@@ -192,7 +192,7 @@ function getWorkingDays($startDate, $endDate) {
  * @param array $issues
  * @return array
  */
-function getReminingHoursData($from, $till, $issues)
+function getRemainingHoursData($from, $till, $issues)
 {
   $dtFrom = new DateTime(date('Y-m-d', $from));
   $dtTill = new DateTime(date('Y-m-d', $till));
