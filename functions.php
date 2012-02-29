@@ -185,3 +185,126 @@ function getWorkingDays($startDate, $endDate) {
 
 	return $workingDays;
 }
+
+/**
+ * @param int $from
+ * @param int $till
+ * @param array $issues
+ * @return array
+ */
+function getRemainingHoursData($from, $till, $issues)
+{
+  $dtFrom = new DateTime(date('Y-m-d', $from));
+  $dtTill = new DateTime(date('Y-m-d', $till));
+
+  $remainingHoursFieldId = custom_field_get_id_from_name(BurnDownChartPlugin::HOURS_REMAINING_FIELD);
+
+  // set blank results
+  $result = array();
+  $dtTmp = clone $dtFrom;
+  do
+  {
+    $result[$dtTmp->format('Ymd')] = 0;
+    $dtTmp->modify('+1 day');
+  }
+  while ($dtTmp <= $dtTill);
+
+  // get issues data
+  $issuesData = array();
+  foreach ($issues as $issue)
+  {
+    $history = history_get_events_array($issue['id']);
+
+    // get historical info
+    $issueData = array();
+    foreach ($history as $event)
+    {
+      if ($event['note'] == BurnDownChartPlugin::HOURS_REMAINING_FIELD)
+      {
+        // get event date
+        $dtEvent = new DateTime($event['date']);
+        $dtEvent->setTime(0, 0, 0);
+        // if event date is greater then till date - break
+        if ($dtEvent > $dtTill)
+        {
+          break;
+        }
+
+        // get values
+        $values = array();
+        eregi('([0-9\.]*) => ([0-9\.]*)', $event['change'], $values);
+        $previousValue = isset($values[1]) ? (float) $values[1] : 0;
+        $value = isset($values[2]) ? (float) $values[2] : 0;
+
+        // if there is not previous event create it as first
+        if (empty($issueData))
+        {
+          addChronologicalEventValue($issueData, new DateTime(date('Y-m-d', $issue['date_submitted'])), $previousValue, $dtFrom, $dtTill);
+        }
+
+        // add current event
+        addChronologicalEventValue($issueData, $dtEvent, $value, $dtFrom, $dtTill);
+      }
+    }
+
+    // if there is no history events check for current value
+    if (empty($issueData))
+    {
+      $value = (float) custom_field_get_value($remainingHoursFieldId, $issue['id']);
+      if ($value > 0)
+      {
+        addChronologicalEventValue(
+          $issueData,
+          new DateTime(date('Y-m-d', $issue['date_submitted'])),
+          $value,
+          $dtFrom,
+          $dtTill
+        );
+      }
+    }
+
+    // if there is events add to issues data array
+    if (!empty($issueData))
+    {
+      $issuesData[] = $issueData;
+    }
+  }
+
+  // merge issues data
+  foreach ($issuesData as $issueData)
+  {
+    $value = 0;
+    $dtTmp = clone $dtFrom;
+    do
+    {
+      if (isset($issueData[$dtTmp->format('Ymd')]))
+      {
+        $value = $issueData[$dtTmp->format('Ymd')];
+      }
+      $result[$dtTmp->format('Ymd')] += $value;
+      $dtTmp->modify('+1 day');
+    }
+    while ($dtTmp <= $dtTill);
+  }
+
+  return array_values($result);
+}
+
+/**
+ * @param array $data
+ * @param DateTime $dtEvent
+ * @param float $value
+ * @param DateTime $dtFrom
+ * @param DateTime $dtTill
+ */
+function addChronologicalEventValue(&$data, $dtEvent, $value, $dtFrom, $dtTill)
+{
+  if ($dtEvent < $dtFrom)
+  {
+    $data[$dtFrom->format('Ymd')] = $value;
+  }
+  else if ($dtEvent <= $dtTill)
+  {
+    $data[$dtEvent->format('Ymd')] = $value;
+  }
+}
