@@ -197,6 +197,8 @@ function getReminingHoursData($from, $till, $issues)
   $dtFrom = new DateTime(date('Y-m-d', $from));
   $dtTill = new DateTime(date('Y-m-d', $till));
 
+  $remainingHoursFieldId = custom_field_get_id_from_name(BurnDownChartPlugin::HOURS_REMAINING_FIELD);
+
   // set blank results
   $result = array();
   $dtTmp = clone $dtFrom;
@@ -213,26 +215,55 @@ function getReminingHoursData($from, $till, $issues)
   {
     $history = history_get_events_array($issue['id']);
 
+    // get historical info
     $issueData = array();
     foreach ($history as $event)
     {
       if ($event['note'] == BurnDownChartPlugin::HOURS_REMAINING_FIELD)
       {
-        $value = (float) ereg_replace('[^0-9\.]', '', $event['change']);
+        // get event date
         $dtEvent = new DateTime($event['date']);
         $dtEvent->setTime(0, 0, 0);
+        // if event date is greater then till date - break
+        if ($dtEvent > $dtTill)
+        {
+          break;
+        }
 
-        if ($dtEvent < $dtFrom)
+        // get values
+        $values = array();
+        eregi('([0-9\.]*) => ([0-9\.]*)', $event['change'], $values);
+        $previousValue = isset($values[1]) ? (float) $values[1] : 0;
+        $value = isset($values[2]) ? (float) $values[2] : 0;
+
+        // if there is not previous event create it as first
+        if (empty($issueData))
         {
-          $issueData[$dtFrom->format('Ymd')] = $value;
+          addChronologicalEventValue($issueData, new DateTime(date('Y-m-d', $issue['date_submitted'])), $previousValue, $dtFrom, $dtTill);
         }
-        else if ($dtEvent <= $dtTill)
-        {
-          $issueData[$dtEvent->format('Ymd')] = $value;
-        }
+
+        // add current event
+        addChronologicalEventValue($issueData, $dtEvent, $value, $dtFrom, $dtTill);
       }
     }
 
+    // if there is no history events check for current value
+    if (empty($issueData))
+    {
+      $value = (float) custom_field_get_value($remainingHoursFieldId, $issue['id']);
+      if ($value > 0)
+      {
+        addChronologicalEventValue(
+          $issueData,
+          new DateTime(date('Y-m-d', $issue['date_submitted'])),
+          $value,
+          $dtFrom,
+          $dtTill
+        );
+      }
+    }
+
+    // if there is events add to issues data array
     if (!empty($issueData))
     {
       $issuesData[] = $issueData;
@@ -257,4 +288,23 @@ function getReminingHoursData($from, $till, $issues)
   }
 
   return array_values($result);
+}
+
+/**
+ * @param array $data
+ * @param DateTime $dtEvent
+ * @param float $value
+ * @param DateTime $dtFrom
+ * @param DateTime $dtTill
+ */
+function addChronologicalEventValue(&$data, $dtEvent, $value, $dtFrom, $dtTill)
+{
+  if ($dtEvent < $dtFrom)
+  {
+    $data[$dtFrom->format('Ymd')] = $value;
+  }
+  else if ($dtEvent <= $dtTill)
+  {
+    $data[$dtEvent->format('Ymd')] = $value;
+  }
 }

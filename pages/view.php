@@ -89,7 +89,8 @@ $reminingHoursLine = new line();
 $reminingHoursLine->set_colour('#CC0707');
 $reminingHoursLine->set_values($reminingHoursData);
 
-$chart = constructChart($version->version, $totalStoryPoints, $xAxisData);
+$yDiapazon = max(max($optimalLineData), max($lineData), max($reminingHoursData)); // $totalStoryPoints
+$chart = constructChart($version->version, $yDiapazon, $xAxisData);
 
 $chart->add_element($optimalLine);
 $chart->add_element($dataLine);
