@@ -17,9 +17,7 @@ Ensure you have set the config "$g_roadmap_view_threshold" to something good (e.
 
 INSTALL
 -------
-1. Upload the BurnDownChart folder into the plugins folder
-
-1.a Plugin name allows only alphabetical characters. Name Mantis-BurnDownChart is not valid.
+1. Place everything in a folder named "BurnDownChart" into the plugins folder
 
 2. Apply the patch for manage_proj_ver_edit_page.php:
    ~/mantis $ patch < plugins/BurnDownChart/manage_proj_ver_edit_page.php.patch
@@ -29,17 +27,17 @@ INSTALL
 3. Install the plugin in the admin section of MantisBT
 
 4. Goto Manage Custom Fields and edit "Date resolved", "Story points" and "Hours Remaining"
-   - For each of these fields, link the projects to the file
+   - For each of these fields, link the projects to the field
    - DO NOT rename the field, it won't work otherwise.
 
 5. Edit the project you like and add a version which will be your sprint.
    - Date order is the date when the sprint should be finished
    - Startdate is the start date of the sprint
 
-6. For each task to add to the sprint, set the target version and the story points appropriately.
+6. For each task to add to the sprint, set the target version, the "story points" and the "hours remaining" appropriately.
 
 Done.
 
 THANKS TO
 ---------
-MantisBT & Open Flash Chart developers
+MantisBT & Open Flash Chart developers 

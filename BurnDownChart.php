@@ -30,7 +30,7 @@ class BurnDownChartPlugin extends MantisPlugin {
 	public function register() {
 		$this->name = 'Burn Down Chart';
 		$this->description = 'Generates a burn down chart from the roadmap';
-		$this->version = '0.1';
+		$this->version = '0.2';
 		$this->requires = array(
 			'MantisCore' => '1.2.4'
 		);
