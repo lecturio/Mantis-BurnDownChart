@@ -30,6 +30,7 @@ require dirname(__FILE__) . '/../viewHelperFunctions.php';
 require dirname(__FILE__) . '/../files/open_flash_chart/php-ofc-library/open-flash-chart.php';
 require_once dirname(__FILE__) . '/../files/open_flash_chart/php-ofc-library/ofc_line.php';
 require_once dirname(__FILE__) . '/../files/open_flash_chart/php-ofc-library/ofc_line_dot.php';
+require dirname(__FILE__) . '/../HoursRemainingChart.php';
 
 $versionId = gpc_get_int('versionId');
 if (!$versionId) {
@@ -58,6 +59,9 @@ $today = strtotime("today");
 for ($i = 0; ; $i++) {
   $currentDateTs = strtotime("+" . $currentDayIncrement . " days", $dateCreatedTs);
   $currentDate = date($shortDateFormat, $currentDateTs);
+  if ($sprintFinishedDate == $currentDate) {
+    break;
+  }
   if (date("N", $currentDateTs) < 6) {
     $xAxisData[] = $currentDate;
     if (isset($numberOfResolvedIssuesByDate[$currentDate])) {
@@ -68,17 +72,14 @@ for ($i = 0; ; $i++) {
     }
   }
   $currentDayIncrement++;
-  if ($sprintFinishedDate == $currentDate) {
-    break;
-  }
 }
 $dataLine->set_values($lineData);
 
 $optimalLine = new line();
 $optimalLine->set_colour('#018F00');
-$optimalManDaysPerDay = round($totalStoryPoints / $workingDays, 6);
+$optimalManDaysPerDay = round($totalStoryPoints / ($workingDays - 1), 6);
 $optimalLineData = array();
-for ($i = 0; $i <= $workingDays; $i++) {
+for ($i = 0; $i < $workingDays; $i++) {
   $optimalLineData[] = $totalStoryPoints - $i * $optimalManDaysPerDay;
 }
 $optimalLine->set_values($optimalLineData);
@@ -89,20 +90,11 @@ $chart->add_element($optimalLine);
 $chart->add_element($dataLine);
 
 // Hours reminding chart
-$remainingHoursData = getRemainingHoursData($dateCreatedTs, $version->date_order, $issues);
-// get chart object
-$hoursRemindingChart = constructChart(
-  'Hours reminding ' . $version->version,
-  max($remainingHoursData),
-  $xAxisData
-);
-// create hours remaining
-$remainingHoursLine = new line();
-$remainingHoursLine->set_colour('#CC0707');
-$remainingHoursLine->set_values($remainingHoursData);
-
-$hoursRemindingChart->add_element($remainingHoursLine);
-
+$hoursRemindingChart = new HoursRemainingChart();
+$hoursRemindingChart->setFrom($dateCreatedTs);
+$hoursRemindingChart->setTill($version->date_order);
+$hoursRemindingChart->setIssues($issues);
+$hoursRemindingChart = $hoursRemindingChart->getChart('Hours reminding ' . $version->version);
 ?>
 <script type="text/javascript"
         src="plugins/BurnDownChart/files/open_flash_chart/js/json/json2.js"></script>
