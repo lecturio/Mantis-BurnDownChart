@@ -49,7 +49,7 @@ class BurnDownChartPlugin extends MantisPlugin {
 			'EVENT_MENU_MAIN' => 'displayMenuLink',
 			'EVENT_PLUGIN_BURNDOWNCHART_VERSION_DATE_CREATED' => 'displayDateCreatedField',
 			'EVENT_MANAGE_VERSION_UPDATE' => 'updateVersionWithDateCreated',
-			'EVENT_UPDATE_BUG' => 'updateBugWithDateResolved'
+			'EVENT_UPDATE_BUG' => 'updateOnResolve'
 		);
 	}
 
@@ -92,6 +92,19 @@ class BurnDownChartPlugin extends MantisPlugin {
 		db_query_bound($query, array($dateCreated, $versionId));
 	}
 
+  /**
+   * @param string $event
+   * @param BugData $bugData
+   * @param int $bugId
+   */
+  public function updateOnResolve($event, $bugData, $bugId)
+  {
+    // update 'date resolved'
+    $this->updateBugWithDateResolved($event, $bugData, $bugId);
+    // update 'hours remaining'
+    $this->updateBugWithHoursRemaining($event, $bugData, $bugId);
+  }
+
 	public function updateBugWithDateResolved($event, $bugData, $bugId) {
 		$id = custom_field_get_id_from_name(self::DATE_RESOLVED_FIELD);
 		if ($bugData->status == RESOLVED) {
@@ -103,6 +116,22 @@ class BurnDownChartPlugin extends MantisPlugin {
 			}
 		}
 	}
+
+  /**
+   * @param string $event
+   * @param BugData $bugData
+   * @param int $bugId
+   */
+  public function updateBugWithHoursRemaining($event, $bugData, $bugId)
+  {
+    // get custom field id
+    $id = custom_field_get_id_from_name(self::HOURS_REMAINING_FIELD);
+    // if issue is resolved set 'hours remaining' to zero
+    if ($bugData->status == RESOLVED)
+    {
+      custom_field_set_value($id, $bugId, 0);
+    }
+  }
 
 	public function install() {
     $ret = $this->createManDaysCustomField();
@@ -194,14 +223,22 @@ class BurnDownChartPlugin extends MantisPlugin {
     return custom_field_update($id, $definitions);
   }
 
-	public function uninstall() {
-		$id = custom_field_get_id_from_name(self::MAN_DAYS_FIELD);
-		$ret = custom_field_destroy($id);
-		if ($ret === true) {
-			$id = custom_field_get_id_from_name(self::DATE_RESOLVED_FIELD);
-			return custom_field_destroy($id);
-		}
-		return false;
+	public function uninstall()
+	{
+    // destroy 'Story points' field
+    $ret = custom_field_destroy(custom_field_get_id_from_name(self::MAN_DAYS_FIELD));
+    // destroy 'Date resolved' field
+    if ($ret == true)
+    {
+      $ret = custom_field_destroy(custom_field_get_id_from_name(self::DATE_RESOLVED_FIELD));
+    }
+    // destroy 'Hours remaining' field
+    if ($ret == true)
+    {
+      $ret = custom_field_destroy(custom_field_get_id_from_name(self::HOURS_REMAINING_FIELD));
+    }
+
+    return $ret;
 	}
 
 	public function schema() {
