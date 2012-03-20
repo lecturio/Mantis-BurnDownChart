@@ -77,10 +77,10 @@ $dataLine->set_values($lineData);
 
 $optimalLine = new line();
 $optimalLine->set_colour('#018F00');
-$optimalManDaysPerDay = round($totalStoryPoints / ($workingDays - 1), 6);
+$optimalManDaysPerDay = $totalStoryPoints / ($workingDays - 1);
 $optimalLineData = array();
 for ($i = 0; $i < $workingDays; $i++) {
-  $optimalLineData[] = $totalStoryPoints - $i * $optimalManDaysPerDay;
+  $optimalLineData[] = round($totalStoryPoints - $i * $optimalManDaysPerDay, 4);
 }
 $optimalLine->set_values($optimalLineData);
 
@@ -89,12 +89,12 @@ $chart = constructChart($version->version, $totalStoryPoints, $xAxisData);
 $chart->add_element($optimalLine);
 $chart->add_element($dataLine);
 
-// Hours reminding chart
-$hoursRemindingChart = new HoursRemainingChart();
-$hoursRemindingChart->setFrom($dateCreatedTs);
-$hoursRemindingChart->setTill($version->date_order);
-$hoursRemindingChart->setIssues($issues);
-$hoursRemindingChart = $hoursRemindingChart->getChart('Hours reminding ' . $version->version);
+// Hours remaining chart
+$hoursRemainingChart = new HoursRemainingChart();
+$hoursRemainingChart->setFrom($dateCreatedTs);
+$hoursRemainingChart->setTill($version->date_order);
+$hoursRemainingChart->setIssues($issues);
+$hoursRemainingChart = $hoursRemainingChart->getChart('Hours remaining ' . $version->version);
 ?>
 <script type="text/javascript"
         src="plugins/BurnDownChart/files/open_flash_chart/js/json/json2.js"></script>
@@ -102,7 +102,7 @@ $hoursRemindingChart = $hoursRemindingChart->getChart('Hours reminding ' . $vers
         src="plugins/BurnDownChart/files/open_flash_chart/js/swfobject.js"></script>
 <script type="text/javascript">
   swfobject.embedSWF('plugins/BurnDownChart/files/open_flash_chart/open-flash-chart.swf', "burnDownChart", "600", "400", "9.0.0");
-  swfobject.embedSWF("plugins/BurnDownChart/files/open_flash_chart/open-flash-chart.swf", "HRBurnDownChart", "600", "400", "9.0.0", "expressInstall.swf", {"get-data": "get_hours_reminding_data"});
+  swfobject.embedSWF("plugins/BurnDownChart/files/open_flash_chart/open-flash-chart.swf", "HRBurnDownChart", "600", "400", "9.0.0", "expressInstall.swf", {"get-data": "get_hours_remaining_data"});
 </script>
 <script type="text/javascript">
 
@@ -112,11 +112,11 @@ $hoursRemindingChart = $hoursRemindingChart->getChart('Hours reminding ' . $vers
 
   var data = <?php echo $chart->toPrettyString(); ?>;
 
-  function get_hours_reminding_data() {
-    return JSON.stringify(hoursRemindingData);
+  function get_hours_remaining_data() {
+    return JSON.stringify(hoursRemainingData);
   }
 
-  var hoursRemindingData = <?php echo $hoursRemindingChart->toPrettyString(); ?>;
+  var hoursRemainingData = <?php echo $hoursRemainingChart->toPrettyString(); ?>;
 
 </script>
 <span class="pagetitle"><?php echo printVersionHeader($version) ?></span>
