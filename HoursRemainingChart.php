@@ -236,11 +236,11 @@ class HoursRemainingChart
   {
     if ($dtEvent < $this->from)
     {
-      $data[$this->from->format('Ymd')] = $value;
+      $data[$this->from->format('Ymd')] = round($value, 4);
     }
     else if ($dtEvent <= $this->till)
     {
-      $data[$dtEvent->format('Ymd')] = $value;
+      $data[$dtEvent->format('Ymd')] = round($value, 4);
     }
   }
 
@@ -274,7 +274,7 @@ class HoursRemainingChart
       // create data array
       for ($i = 0; $i < $cntDays; $i++)
       {
-        $result[$i] = $this->initialHours - ($i * $perDay);
+        $result[$i] = round($this->initialHours - ($i * $perDay), 4);
       }
     }
 
