@@ -225,6 +225,10 @@ class HoursRemainingChart
     }
 
     $this->remainingHoursData = array_values($this->remainingHoursData);
+
+    // add initial point
+    array_unshift($this->remainingHoursData, $this->initialHours);
+    array_unshift($this->xAxisData, 'Initial');
   }
 
   /**
