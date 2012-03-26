@@ -52,8 +52,8 @@ $currentDayIncrement = 0;
 $sprintFinishedDate = date($shortDateFormat, $version->date_order);
 
 $dataLine = new line();
-$lineData = array();
-$xAxisData = array();
+$lineData = array($totalStoryPoints);
+$xAxisData = array('Initial');
 $storyPointsLeft = $totalStoryPoints;
 $today = strtotime("today");
 for ($i = 0; ; $i++) {
@@ -77,14 +77,14 @@ $dataLine->set_values($lineData);
 
 $optimalLine = new line();
 $optimalLine->set_colour('#018F00');
-$optimalManDaysPerDay = $totalStoryPoints / ($workingDays - 1);
+$optimalManDaysPerDay = $totalStoryPoints / $workingDays;
 $optimalLineData = array();
-for ($i = 0; $i < $workingDays; $i++) {
+for ($i = 0; $i <= $workingDays; $i++) {
   $optimalLineData[] = round($totalStoryPoints - $i * $optimalManDaysPerDay, 4);
 }
 $optimalLine->set_values($optimalLineData);
 
-$chart = constructChart($version->version, $totalStoryPoints, $xAxisData);
+$chart = constructChart('Story Points', $totalStoryPoints, $xAxisData);
 
 $chart->add_element($optimalLine);
 $chart->add_element($dataLine);
@@ -94,7 +94,7 @@ $hoursRemainingChart = new HoursRemainingChart();
 $hoursRemainingChart->setFrom($dateCreatedTs);
 $hoursRemainingChart->setTill($version->date_order);
 $hoursRemainingChart->setIssues($issues);
-$hoursRemainingChart = $hoursRemainingChart->getChart('Hours remaining ' . $version->version);
+$hoursRemainingChart = $hoursRemainingChart->getChart('Hours remaining');
 ?>
 <script type="text/javascript"
         src="plugins/BurnDownChart/files/open_flash_chart/js/json/json2.js"></script>
@@ -123,6 +123,7 @@ $hoursRemainingChart = $hoursRemainingChart->getChart('Hours remaining ' . $vers
 <br/>
 <br/>
 <div class="center">
+  <h2>Version: <?php echo $version->version; ?></h2>
   <div id="HRBurnDownChart"></div><br /><br />
   <div id="burnDownChart"></div>
 </div>
