@@ -162,7 +162,6 @@ function getWorkingDays($startDate, $endDate)
 	$the_first_day_of_week = date("N", $startDate);
 	$the_last_day_of_week = date("N", $endDate);
 
-
 	//---->The two can be equal in leap years when february has 29 days, the equal sign is added here
 	//In the first case the whole interval is within a week, in the second case the interval falls in two weeks.
 	if ($the_first_day_of_week <= $the_last_day_of_week) {
@@ -176,7 +175,9 @@ function getWorkingDays($startDate, $endDate)
 	else {
 		if ($the_first_day_of_week <= 6) {
 			//In the case when the interval falls in two weeks, there will be a weekend for sure
-			$no_remaining_days = $no_remaining_days - 3;
+      // iik: there are only two days in the weekend
+      $no_remaining_days = $no_remaining_days - 2;
+      // $no_remaining_days = $no_remaining_days - 3;
 		}
 	}
 
