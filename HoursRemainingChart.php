@@ -110,7 +110,7 @@ class HoursRemainingChart
     $this->remainingHoursData = array();
     $this->xAxisData = array();
 
-    $remainingHoursFieldId = custom_field_get_id_from_name(BurnDownChartPlugin::HOURS_REMAINING_FIELD);
+    $remainingHoursFieldId = custom_field_get_id_from_name(BurnDownChartPlugin::REMAINING_FIELD);
 
     $dtInitial = null;
 
@@ -145,7 +145,7 @@ class HoursRemainingChart
       $initialHours = array();
       foreach ($history as $event)
       {
-        if ($event['note'] == BurnDownChartPlugin::HOURS_REMAINING_FIELD)
+        if ($event['note'] == BurnDownChartPlugin::REMAINING_FIELD)
         {
           // get event date
           $dtEvent = new DateTime($event['date']);

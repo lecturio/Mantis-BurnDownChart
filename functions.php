@@ -98,7 +98,7 @@ function getIssuesByVersion($version) {
 
 function getTotalStoryPoints($issues) {
 	$manDays = 0;
-	$customFieldId = custom_field_get_id_from_name(BurnDownChartPlugin::MAN_DAYS_FIELD);
+	$customFieldId = custom_field_get_id_from_name(BurnDownChartPlugin::INITIAL_ESTIMATE_FIELD);
 	foreach ($issues as $issue) {
 		$manDays += custom_field_get_value($customFieldId, $issue['id']);
 	}
@@ -112,8 +112,8 @@ function getNumberOfResolvedIssuesByDate($version) {
 	$bugTable = db_get_table('mantis_bug_table');
 	$relationTable = db_get_table('mantis_bug_relationship_table');
 	$customFieldsTable = db_get_table('mantis_custom_field_string_table');
-	$resolvedDateField = custom_field_get_id_from_name(BurnDownChartPlugin::DATE_RESOLVED_FIELD);
-	$manDaysField = custom_field_get_id_from_name(BurnDownChartPlugin::MAN_DAYS_FIELD);
+	$resolvedDateField = custom_field_get_id_from_name(BurnDownChartPlugin::RESOLUTION_DATE_FIELD);
+	$manDaysField = custom_field_get_id_from_name(BurnDownChartPlugin::INITIAL_ESTIMATE_FIELD);
 
 	$query = "SELECT DATE(FROM_UNIXTIME(cft.value)) AS resolvedDate, sbt.id FROM $bugTable AS sbt
 						LEFT JOIN $relationTable ON sbt.id=$relationTable.destination_bug_id AND $relationTable.relationship_type=2

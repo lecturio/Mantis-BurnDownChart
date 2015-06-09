@@ -23,20 +23,20 @@
 
 class BurnDownChartPlugin extends MantisPlugin {
 	const DATE_CREATED_FIELD = 'date_created';
-	const DATE_RESOLVED_FIELD = 'Date resolved';
-	const MAN_DAYS_FIELD      = 'Story points';
-  const HOURS_REMAINING_FIELD = 'Hours remaining';
+	const RESOLUTION_DATE_FIELD = 'Resolution_Date'; // resolution time
+	const INITIAL_ESTIMATE_FIELD = 'Initial_Estimate'; // Temps estimé initial (JH)
+	const REMAINING_FIELD = 'Remaining_Work'; //Temps restant (JH)
 
 	public function register() {
 		$this->name = 'Burn Down Chart';
 		$this->description = 'Generates a burn down chart from the roadmap';
-		$this->version = '0.2';
+		$this->version = '0.3';
 		$this->requires = array(
 			'MantisCore' => '1.2.4'
 		);
 
-		$this->author = 'Michael Weibel';
-		$this->contact = 'michael@students.ch';
+		$this->author = 'Michael Weibel & Louis Grignon';
+		$this->contact = 'michael@students.ch;louis.grignon@gmail.com';
 		$this->url     = 'http://www.students.ch';
 	}
 
@@ -106,7 +106,7 @@ class BurnDownChartPlugin extends MantisPlugin {
   }
 
 	public function updateBugWithDateResolved($event, $bugData, $bugId) {
-		$id = custom_field_get_id_from_name(self::DATE_RESOLVED_FIELD);
+		$id = custom_field_get_id_from_name(self::RESOLUTION_DATE_FIELD);
 		if ($bugData->status == RESOLVED) {
 			custom_field_set_value($id, $bugId, time());
 		} else {
@@ -125,7 +125,7 @@ class BurnDownChartPlugin extends MantisPlugin {
   public function updateBugWithHoursRemaining($event, $bugData, $bugId)
   {
     // get custom field id
-    $id = custom_field_get_id_from_name(self::HOURS_REMAINING_FIELD);
+    $id = custom_field_get_id_from_name(self::REMAINING_FIELD);
     // if issue is resolved set 'hours remaining' to zero
     if ($bugData->status == RESOLVED)
     {
@@ -150,10 +150,10 @@ class BurnDownChartPlugin extends MantisPlugin {
 	}
 
 	private function createManDaysCustomField() {
-		$id = custom_field_create(self::MAN_DAYS_FIELD);
+		$id = custom_field_create(self::INITIAL_ESTIMATE_FIELD);
 
 		$definitions = array();
-		$definitions['name']             = self::MAN_DAYS_FIELD;
+		$definitions['name']             = self::INITIAL_ESTIMATE_FIELD;
 		$definitions['type']             = '2';
 		$definitions['access_level_r']   = VIEWER;
 		$definitions['access_level_rw']  = MANAGER;
@@ -173,10 +173,10 @@ class BurnDownChartPlugin extends MantisPlugin {
 	}
 
 	private function createDateResolvedCustomField() {
-		$id = custom_field_create(self::DATE_RESOLVED_FIELD);
+		$id = custom_field_create(self::RESOLUTION_DATE_FIELD);
 
 		$definitions = array();
-		$definitions['name']             = self::DATE_RESOLVED_FIELD;
+		$definitions['name']             = self::RESOLUTION_DATE_FIELD;
 		$definitions['type']             = '8';
 		$definitions['access_level_r']   = VIEWER;
 		$definitions['access_level_rw']  = ADMINISTRATOR;
@@ -201,10 +201,10 @@ class BurnDownChartPlugin extends MantisPlugin {
    */
   private function createHoursRemainingCustomField()
   {
-    $id = custom_field_create(self::HOURS_REMAINING_FIELD);
+    $id = custom_field_create(self::REMAINING_FIELD);
 
     $definitions = array();
-    $definitions['name']             = self::HOURS_REMAINING_FIELD;
+    $definitions['name']             = self::REMAINING_FIELD;
     $definitions['type']             = '2';
     $definitions['access_level_r']   = VIEWER;
     $definitions['access_level_rw']  = DEVELOPER;
@@ -226,16 +226,16 @@ class BurnDownChartPlugin extends MantisPlugin {
 	public function uninstall()
 	{
     // destroy 'Story points' field
-    $ret = custom_field_destroy(custom_field_get_id_from_name(self::MAN_DAYS_FIELD));
+    $ret = custom_field_destroy(custom_field_get_id_from_name(self::INITIAL_ESTIMATE_FIELD));
     // destroy 'Date resolved' field
     if ($ret == true)
     {
-      $ret = custom_field_destroy(custom_field_get_id_from_name(self::DATE_RESOLVED_FIELD));
+      $ret = custom_field_destroy(custom_field_get_id_from_name(self::RESOLUTION_DATE_FIELD));
     }
     // destroy 'Hours remaining' field
     if ($ret == true)
     {
-      $ret = custom_field_destroy(custom_field_get_id_from_name(self::HOURS_REMAINING_FIELD));
+      $ret = custom_field_destroy(custom_field_get_id_from_name(self::REMAINING_FIELD));
     }
 
     return $ret;
