@@ -23,6 +23,7 @@
 
 class BurnDownChartPlugin extends MantisPlugin {
 	const DATE_CREATED_FIELD = 'date_created';
+	const ALLOCATED_RESOURCES_FIELD = 'allocated_resources';
 	const RESOLUTION_DATE_FIELD = 'Resolution_Date'; // resolution time
 	const INITIAL_ESTIMATE_FIELD = 'Initial_Estimate'; // Temps estimé initial (JH)
 	const REMAINING_FIELD = 'Remaining_Work'; //Temps restant (JH)
@@ -44,11 +45,11 @@ class BurnDownChartPlugin extends MantisPlugin {
 	}
 
 	public function hooks() {
-		event_declare('EVENT_PLUGIN_BURNDOWNCHART_VERSION_DATE_CREATED', EVENT_TYPE_OUTPUT);
+		event_declare('EVENT_PLUGIN_BURNDOWNCHART_VERSION_EDIT', EVENT_TYPE_OUTPUT);
 		return array(
 			'EVENT_MENU_MAIN' => 'displayMenuLink',
-			'EVENT_PLUGIN_BURNDOWNCHART_VERSION_DATE_CREATED' => 'displayDateCreatedField',
-			'EVENT_MANAGE_VERSION_UPDATE' => 'updateVersionWithDateCreated',
+			'EVENT_PLUGIN_BURNDOWNCHART_VERSION_EDIT' => 'getVersionEditExtensionHtml',
+			'EVENT_MANAGE_VERSION_UPDATE' => 'onVersionUpdate',
 			'EVENT_UPDATE_BUG' => 'updateOnResolve'
 		);
 	}
@@ -57,9 +58,10 @@ class BurnDownChartPlugin extends MantisPlugin {
 		return array('<a href="' . plugin_page('index') . '">' . plugin_lang_get('menu') . '</a>');
 	}
 
-	public function displayDateCreatedField() {
+	public function getVersionEditExtensionHtml() {
 		$versionId = gpc_get_int('version_id');
 		$dateCreated = version_get_field($versionId, self::DATE_CREATED_FIELD);
+		$allocatedResources = version_get_field($versionId, self::ALLOCATED_RESOURCES_FIELD);
 
 		ob_start();
 ?>
@@ -75,21 +77,32 @@ class BurnDownChartPlugin extends MantisPlugin {
 		?>
 	</td>
 </tr>
+<tr>
+	<td class="category">
+		<?php echo plugin_lang_get( 'allocatedResources' ) ?>
+	</td>
+	<td>
+		<input type="number" step="0.1" id="<?php echo self::ALLOCATED_RESOURCES_FIELD ?>" name="<?php echo self::ALLOCATED_RESOURCES_FIELD ?>" size="2" value="<?php echo (date_is_null($allocatedResources) ? '' : string_attribute($allocatedResources)) ?>" />
+	</td>
+</tr>
 <?php
 		return ob_get_clean();
 	}
 
-	public function updateVersionWithDateCreated($event, $versionId) {
+	public function onVersionUpdate($event, $versionId) {
 		version_ensure_exists($versionId);
 
 		$dateCreated = gpc_get_string(self::DATE_CREATED_FIELD);
+		$allocatedResources = gpc_get_string(self::ALLOCATED_RESOURCES_FIELD);
 
 		$table = db_get_table('mantis_project_version_table');
 
 		$query = "UPDATE $table
-				  SET " . self::DATE_CREATED_FIELD . " = " . db_param() ."
+				  SET 
+				    " . self::DATE_CREATED_FIELD . " = " . db_param() .",
+                    " . self::ALLOCATED_RESOURCES_FIELD . " = " . db_param() ."
 				  WHERE id=" . db_param();
-		db_query_bound($query, array($dateCreated, $versionId));
+		db_query_bound($query, array($dateCreated, $allocatedResources, $versionId));
 	}
 
   /**
@@ -134,7 +147,7 @@ class BurnDownChartPlugin extends MantisPlugin {
   }
 
 	public function install() {
-    $ret = $this->createManDaysCustomField();
+    $ret = $this->createInitialEstimateCustomField();
 
     if ($ret === true)
     {
@@ -143,13 +156,17 @@ class BurnDownChartPlugin extends MantisPlugin {
 
     if ($ret === true)
     {
-      $ret = $this->createHoursRemainingCustomField();
+      $ret = $this->createRemainingCustomField();
     }
 
     return $ret;
 	}
 
-	private function createManDaysCustomField() {
+	private function createInitialEstimateCustomField() {
+        if (custom_field_get_id_from_name(self::INITIAL_ESTIMATE_FIELD) !== false) {
+          return true;
+        }
+
 		$id = custom_field_create(self::INITIAL_ESTIMATE_FIELD);
 
 		$definitions = array();
@@ -173,6 +190,10 @@ class BurnDownChartPlugin extends MantisPlugin {
 	}
 
 	private function createDateResolvedCustomField() {
+        if (custom_field_get_id_from_name(self::RESOLUTION_DATE_FIELD) !== false) {
+        	return true;
+        }
+
 		$id = custom_field_create(self::RESOLUTION_DATE_FIELD);
 
 		$definitions = array();
@@ -199,8 +220,12 @@ class BurnDownChartPlugin extends MantisPlugin {
    * Creates 'Hours remaining' custom field
    * @return bool
    */
-  private function createHoursRemainingCustomField()
+  private function createRemainingCustomField()
   {
+    if (custom_field_get_id_from_name(self::REMAINING_FIELD) !== false) {
+    	return true;
+    }
+    
     $id = custom_field_create(self::REMAINING_FIELD);
 
     $definitions = array();
@@ -225,27 +250,18 @@ class BurnDownChartPlugin extends MantisPlugin {
 
 	public function uninstall()
 	{
-    // destroy 'Story points' field
-    $ret = custom_field_destroy(custom_field_get_id_from_name(self::INITIAL_ESTIMATE_FIELD));
-    // destroy 'Date resolved' field
-    if ($ret == true)
-    {
-      $ret = custom_field_destroy(custom_field_get_id_from_name(self::RESOLUTION_DATE_FIELD));
-    }
-    // destroy 'Hours remaining' field
-    if ($ret == true)
-    {
-      $ret = custom_field_destroy(custom_field_get_id_from_name(self::REMAINING_FIELD));
-    }
-
-    return $ret;
+	  return true;
 	}
 
 	public function schema() {
 		return array(array(
-			'AddColumnSQL', array(
+		'AddColumnSQL', array(
 				db_get_table('mantis_project_version_table'), self::DATE_CREATED_FIELD . ' DATE'
-			)
-		));
+		)
+  ), array(
+  		'AddColumnSQL', array(
+  				db_get_table('mantis_project_version_table'), self::ALLOCATED_RESOURCES_FIELD . ' FLOAT'
+  		)
+      ));
 	}
 }

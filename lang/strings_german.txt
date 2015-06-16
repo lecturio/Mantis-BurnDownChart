@@ -4,3 +4,4 @@
 	$s_plugin_BurnDownChart_chooseVersion = 'Version auswählen';
 	$s_plugin_BurnDownChart_showBurnDownChart = 'Burn Down Chart anzeigen';
 	$s_plugin_BurnDownChart_dateCreated = 'Startdatum';
+	$s_plugin_BurnDownChart_allocatedResources = 'Zugewiesenen Mittel (men)';

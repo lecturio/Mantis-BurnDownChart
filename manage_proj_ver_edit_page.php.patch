@@ -4,7 +4,7 @@
  		?>
  	</td>
  </tr>
-+<?php event_signal('EVENT_PLUGIN_BURNDOWNCHART_VERSION_DATE_CREATED'); ?>
++<?php event_signal('EVENT_PLUGIN_BURNDOWNCHART_VERSION_EDIT'); ?>
  <tr <?php echo helper_alternate_class() ?>>
  	<td class="category">
  		<?php echo lang_get( 'description' ) ?>
