@@ -62,15 +62,17 @@ class WorkProcessedChart {
     $today = strtotime("today");
     
     $theoric_resources = version_get_field($this->version->id, BurnDownChartPlugin::ALLOCATED_RESOURCES_FIELD);
-    $this->theoricVelocity = $theoric_resources;
+    $this->theoricVelocity = $theoric_resources == null ? 1 : $theoric_resources;
     $this->actualVelocity = $this->processedWork / $this->workingDays;
     
     $remainingWork = $this->totalWork - $this->processedWork;
     $remainingDaysBasedOnTheoric = ceil($remainingWork / $this->theoricVelocity);
-    $remainingDaysBasedOnActual = ceil($remainingWork / $this->actualVelocity);
-    
     $this->estimatedEndTimestampBasedOnTheoric = addWorkingDays($today, $remainingDaysBasedOnTheoric);
-    $this->estimatedEndTimestampBasedOnActual = addWorkingDays($today, $remainingDaysBasedOnActual);
+    
+    if ($this->actualVelocity > 0) {
+      $remainingDaysBasedOnActual = ceil($remainingWork / $this->actualVelocity);
+      $this->estimatedEndTimestampBasedOnActual = addWorkingDays($today, $remainingDaysBasedOnActual);
+    }
     
     $this->chartEndTimestamp = max($this->estimatedEndTimestampBasedOnTheoric, $this->estimatedEndTimestampBasedOnActual, $this->targetEndTimestamp);
   }
@@ -211,19 +213,21 @@ class WorkProcessedChart {
     $theoricLine->set_values($theoricData);
     $chart->add_element($theoricLine);
     
-    $color = '#777777';
-    $actualLine = new scatter_line( $color, 2 );
-    $def = new hollow_dot();
-    $def->size(1)->halo_size(1);
-    $actualLine->set_default_dot_style( $def );
-    $actualLine->set_key(plugin_lang_get('estimatedBasedOnActual'), 10);
-    $actualData = array();
-    for ($i = $today_index; $i < count($this->getXAxisTimestamps()); $i++) {
-    	$actualData[] = new scatter_value( $i + 1, max(0, round($this->remainingWork - (($i - $today_index) * $this->actualVelocity), 4)) );
+    if ($this->actualVelocity > 0) {
+      $color = '#777777';
+      $actualLine = new scatter_line( $color, 2 );
+      $def = new hollow_dot();
+      $def->size(1)->halo_size(1);
+      $actualLine->set_default_dot_style( $def );
+      $actualLine->set_key(plugin_lang_get('estimatedBasedOnActual'), 10);
+      $actualData = array();
+      for ($i = $today_index; $i < count($this->getXAxisTimestamps()); $i++) {
+      	$actualData[] = new scatter_value( $i + 1, max(0, round($this->remainingWork - (($i - $today_index) * $this->actualVelocity), 4)) );
+      }
+      
+      $actualLine->set_values($actualData);
+      $chart->add_element($actualLine);
     }
-    
-    $actualLine->set_values($actualData);
-    $chart->add_element($actualLine);
   }
   
   private function isDeadlineReached() {
