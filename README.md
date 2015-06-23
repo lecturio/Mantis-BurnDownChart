@@ -28,8 +28,8 @@ Ensure you have set the config "$g_roadmap_view_threshold" to something good (e.
 6. For each task to add to the sprint, set the target version, the "estimated work" and keep the "remaining" & "spent" fields updated during the sprint.
 
 ## Release History
-0.2 added estimated lines and customisable field names
-0.1 not fully tested and just an alpha version.
+- 0.2 added estimated lines and customisable field names
+- 0.1 not fully tested and just an alpha version.
 
 ## License
 GPL v3: http://www.gnu.org/licenses/gpl.html
