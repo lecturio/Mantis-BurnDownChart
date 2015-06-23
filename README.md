@@ -3,7 +3,7 @@
 This a simple burn down chart for Mantis BT [http://www.mantisbt.org/].
 It uses Open Flash Chart 2 [http://teethgrinder.co.uk/open-flash-chart-2/] for the graph display.
 
-[[file:burndown.png]]
+![Burndown chart example](burndown.png "Burndown chart example")
 
 ## Prerequisits
 Ensure you have set the config "$g_roadmap_view_threshold" to something good (e.g. VIEWER).
