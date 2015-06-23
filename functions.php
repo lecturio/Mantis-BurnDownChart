@@ -106,7 +106,7 @@ function getTotalStoryPoints($issues) {
 	return $manDays;
 }
 
-function getNumberOfResolvedIssuesByDate($version) {
+function getProcessedWorkByDate($version) {
 	version_ensure_exists($version->id);
 
 	$bugTable = db_get_table('mantis_bug_table');
@@ -122,7 +122,7 @@ function getNumberOfResolvedIssuesByDate($version) {
 						WHERE
 							sbt.project_id=" . db_param() . "
 							AND sbt.target_version=" . db_param() . "
-							AND sbt.status = " . RESOLVED . "
+							AND sbt.status >= " . RESOLVED . "
 							ORDER BY sbt.status ASC, sbt.last_updated DESC";
 	$result = db_query_bound($query, array($version->project_id, $version->version));
 

@@ -52,7 +52,7 @@ class WorkProcessedChart {
     $this->targetEndTimestamp = $version->date_order;
     $this->workingDays = round(getWorkingDays($this->startTimestamp, $version->date_order));
     
-    $this->processedWorkByDate  = getNumberOfResolvedIssuesByDate($version);
+    $this->processedWorkByDate  = getProcessedWorkByDate($version);
     $this->processedWork = array_sum(array_values($this->processedWorkByDate));
     
     $this->issues = getIssuesByVersion($version);
