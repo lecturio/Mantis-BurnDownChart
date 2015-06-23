@@ -141,6 +141,25 @@ function getNumberOfResolvedIssuesByDate($version) {
 }
 
 /**
+ * @param int $date (unix timestmap)
+ * @param int $daysAmount number of working days to be added
+ * @return int new date timestamp
+ */
+function addWorkingDays($date, $daysAmount) {
+  $full_weeks = floor($daysAmount / 7);
+  $included_days_off = $full_weeks * 2;
+  $remaining_days = $daysAmount % 7;
+  if ($remaining_days > 0) {
+  	$day_index = (date("N", $date)); // monday = 1, sunday = 7
+  	$included_days_off = $included_days_off + min(max($day_index + $remaining_days - 5, 0), 2);
+  }
+  
+  $totalDaysAdded = ($daysAmount + $included_days_off);
+  
+  return strtotime("+" . $totalDaysAdded . " days", $date);
+}
+
+/**
  * From http://stackoverflow.com/questions/336127/calculate-business-days
  * @param int $startDate Startdate (unix timestmap)
  * @param int $endDate Enddate (unix timestamp)

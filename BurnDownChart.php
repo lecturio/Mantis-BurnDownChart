@@ -27,6 +27,7 @@ class BurnDownChartPlugin extends MantisPlugin {
 	const RESOLUTION_DATE_FIELD = 'Resolution_Date'; // resolution time
 	const INITIAL_ESTIMATE_FIELD = 'Initial_Estimate'; // Temps estimé initial (JH)
 	const REMAINING_FIELD = 'Remaining_Work'; //Temps restant (JH)
+	const TIME_SPENT_FIELD = 'Time_Spent'; //Temps dépensé (JH)
 
 	public function register() {
 		$this->name = 'Burn Down Chart';
@@ -147,19 +148,24 @@ class BurnDownChartPlugin extends MantisPlugin {
   }
 
 	public function install() {
-    $ret = $this->createInitialEstimateCustomField();
-
-    if ($ret === true)
-    {
-      $ret = $this->createDateResolvedCustomField();
-    }
-
-    if ($ret === true)
-    {
-      $ret = $this->createRemainingCustomField();
-    }
-
-    return $ret;
+      $ret = $this->createInitialEstimateCustomField();
+  
+      if ($ret === true)
+      {
+        $ret = $this->createDateResolvedCustomField();
+      }
+  
+  	  if ($ret === true)
+      {
+        $ret = $this->createRemainingCustomField();
+      }
+      
+      if ($ret === true)
+      {
+      	$ret = $this->createTimeSpentCustomField();
+      }
+  
+      return $ret;
 	}
 
 	private function createInitialEstimateCustomField() {
@@ -215,6 +221,38 @@ class BurnDownChartPlugin extends MantisPlugin {
 
 		return custom_field_update($id, $definitions);
 	}
+
+  /**
+   * Creates 'Time Spent' custom field
+   * @return bool
+   */
+  private function createTimeSpentCustomField()
+  {
+    if (custom_field_get_id_from_name(self::TIME_SPENT_FIELD) !== false) {
+    	return true;
+    }
+    
+    $id = custom_field_create(self::TIME_SPENT_FIELD);
+
+    $definitions = array();
+    $definitions['name']             = self::TIME_SPENT_FIELD;
+    $definitions['type']             = '2';
+    $definitions['access_level_r']   = VIEWER;
+    $definitions['access_level_rw']  = DEVELOPER;
+    $definitions['length_min']       = 0;
+    $definitions['length_max']       = 0;
+    $definitions['display_report']   = 1;
+    $definitions['display_update']   = 1;
+    $definitions['display_resolved'] = 1;
+    $definitions['display_closed']   = 0;
+    $definitions['require_report']   = 0;
+    $definitions['require_update']   = 0;
+    $definitions['require_resolved'] = 0;
+    $definitions['require_closed']   = 0;
+    $definitions['filter_by']        = 0;
+
+    return custom_field_update($id, $definitions);
+  }
 
   /**
    * Creates 'Hours remaining' custom field
