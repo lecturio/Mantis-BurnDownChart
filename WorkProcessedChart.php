@@ -46,11 +46,15 @@ class WorkProcessedChart {
   private $chartEndTimestamp;
   
   private function __construct($version) {
+    
+    $today = strtotime("today");
+    
     $this->version = $version;
     
     $this->startTimestamp = strtotime(version_get_field($version->id, BurnDownChartPlugin::DATE_CREATED_FIELD));
     $this->targetEndTimestamp = $version->date_order;
     $this->workingDays = round(getWorkingDays($this->startTimestamp, $version->date_order));
+    $elapsed_days = round(getWorkingDays($this->startTimestamp, $today));
     
     $this->processedWorkByDate  = getProcessedWorkByDate($version);
     $this->processedWork = array_sum(array_values($this->processedWorkByDate));
@@ -59,11 +63,9 @@ class WorkProcessedChart {
     $this->totalWork = getTotalStoryPoints($this->issues);
     $this->remainingWork = $this->totalWork - $this->processedWork;
     
-    $today = strtotime("today");
-    
     $theoric_resources = version_get_field($this->version->id, BurnDownChartPlugin::ALLOCATED_RESOURCES_FIELD);
     $this->theoricVelocity = $theoric_resources == null ? 1 : $theoric_resources;
-    $this->actualVelocity = $this->processedWork / $this->workingDays;
+    $this->actualVelocity = $elapsed_days > 0 ? $this->processedWork / $elapsed_days : 0;
     
     $remainingWork = $this->totalWork - $this->processedWork;
     $remainingDaysBasedOnTheoric = ceil($remainingWork / $this->theoricVelocity);
