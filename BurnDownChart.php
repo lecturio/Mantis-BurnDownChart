@@ -22,8 +22,13 @@
 //error_reporting(E_ALL | E_STRICT);
 
 class BurnDownChartPlugin extends MantisPlugin {
+  
+    const SORTABLE_DATE_FORMAT = 'Y-m-d';
+  
 	const DATE_CREATED_FIELD = 'date_created';
 	const ALLOCATED_RESOURCES_FIELD = 'allocated_resources';
+	const DATE_RELEASED_FIELD = 'date_released';
+	
 	const RESOLUTION_DATE_FIELD = 'Resolution_Date'; // resolution time
 	const INITIAL_ESTIMATE_FIELD = 'Initial_Estimate'; // Temps estimé initial (JH)
 	const REMAINING_FIELD = 'Remaining_Work'; //Temps restant (JH)
@@ -103,7 +108,24 @@ class BurnDownChartPlugin extends MantisPlugin {
 				    " . self::DATE_CREATED_FIELD . " = " . db_param() .",
                     " . self::ALLOCATED_RESOURCES_FIELD . " = " . db_param() ."
 				  WHERE id=" . db_param();
-		db_query_bound($query, array($dateCreated, $allocatedResources, $versionId));
+		db_query_bound($query, array($dateCreated, $date_released, $allocatedResources, $versionId));
+		
+		// release date
+		$released = gpc_get_string('released', null);
+		$date_released = version_get_field($versionId, self::DATE_RELEASED_FIELD);
+		if ($released == null) {
+			$date_released = null;
+		} else if (strlen($date_released) == 0) {
+			$date_released = date(self::SORTABLE_DATE_FORMAT, time());
+		}
+		
+		if ($date_released == null) {
+          $query = "UPDATE $table SET ". self::DATE_RELEASED_FIELD. " = NULL WHERE id=" . db_param();
+          db_query_bound($query, array($versionId));
+		} else {
+          $query = "UPDATE $table SET ". self::DATE_RELEASED_FIELD. " = " . db_param() ." WHERE id=" . db_param();
+          db_query_bound($query, array($date_released, $versionId));
+		}
 	}
 
   /**
@@ -297,9 +319,13 @@ class BurnDownChartPlugin extends MantisPlugin {
 				db_get_table('mantis_project_version_table'), self::DATE_CREATED_FIELD . ' DATE'
 		)
   ), array(
-  		'AddColumnSQL', array(
-  				db_get_table('mantis_project_version_table'), self::ALLOCATED_RESOURCES_FIELD . ' FLOAT'
-  		)
-      ));
+		'AddColumnSQL', array(
+				db_get_table('mantis_project_version_table'), self::ALLOCATED_RESOURCES_FIELD . ' FLOAT'
+		)
+), array(
+		'AddColumnSQL', array(
+				db_get_table('mantis_project_version_table'), self::DATE_RELEASED_FIELD . ' DATE'
+		)
+));
 	}
 }

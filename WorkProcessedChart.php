@@ -5,8 +5,6 @@
  */
 class WorkProcessedChart {
   
-  const SORTABLE_DATE_FORMAT = 'Y-m-d';
-  
   public static function forVersion($version) {
     if ($version == null) {
       return null;
@@ -105,14 +103,14 @@ class WorkProcessedChart {
       return $this->xAxisTimestampsCache;
     }
     
-    $endDate = date(self::SORTABLE_DATE_FORMAT, $this->chartEndTimestamp);
+    $endDate = date(BurnDownChartPlugin::SORTABLE_DATE_FORMAT, $this->chartEndTimestamp);
     
     // TODO : adjust step for big range
     $xAxisDates = array();
     $currentDayIncrement = 0;
     while (true) {
     	$currentDateTs = strtotime("+" . $currentDayIncrement . " days", $this->startTimestamp);
-    	if (date(self::SORTABLE_DATE_FORMAT, $currentDateTs) > $endDate) {
+    	if (date(BurnDownChartPlugin::SORTABLE_DATE_FORMAT, $currentDateTs) > $endDate) {
     		break;
     	}
     	
@@ -137,13 +135,13 @@ class WorkProcessedChart {
     
     $timestamps = $this->getXAxisTimestamps();
     
-    $todaySortableDate = date(self::SORTABLE_DATE_FORMAT, time());
+    $todaySortableDate = date(BurnDownChartPlugin::SORTABLE_DATE_FORMAT, time());
     
     // TODO : adjust step for big range
     $currentDayIncrement = 0;
     foreach ($timestamps as $currentTimestamp) {
     	
-    	if (date(self::SORTABLE_DATE_FORMAT, $currentTimestamp) > $todaySortableDate) {
+    	if (date(BurnDownChartPlugin::SORTABLE_DATE_FORMAT, $currentTimestamp) > $todaySortableDate) {
     		break;
     	}
 
@@ -195,7 +193,7 @@ class WorkProcessedChart {
   }
   
   private function addEstimatedLines(open_flash_chart $chart) {
-    if (date(self::SORTABLE_DATE_FORMAT, strtotime("today")) >= date(self::SORTABLE_DATE_FORMAT, $this->chartEndTimestamp)) {
+    if (date(BurnDownChartPlugin::SORTABLE_DATE_FORMAT, strtotime("today")) >= date(BurnDownChartPlugin::SORTABLE_DATE_FORMAT, $this->chartEndTimestamp)) {
       return; // release is closed
     }
     
@@ -237,13 +235,13 @@ class WorkProcessedChart {
   }
   
   private function getDateIndex($dateTimestamp) {
-    $sortableDate = date(self::SORTABLE_DATE_FORMAT, $dateTimestamp);
+    $sortableDate = date(BurnDownChartPlugin::SORTABLE_DATE_FORMAT, $dateTimestamp);
     
     $i = 0;
     $dateIndex = null;
     $timestamps = $this->getXAxisTimestamps();
     foreach ($timestamps as $timestamp) {
-    	if ($sortableDate == date(self::SORTABLE_DATE_FORMAT, $timestamp)) {
+    	if ($sortableDate == date(BurnDownChartPlugin::SORTABLE_DATE_FORMAT, $timestamp)) {
     		$dateIndex = $i;
     		break;
     	}
