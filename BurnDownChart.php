@@ -98,17 +98,17 @@ class BurnDownChartPlugin extends MantisPlugin {
 	public function onVersionUpdate($event, $versionId) {
 		version_ensure_exists($versionId);
 
-		$dateCreated = gpc_get_string(self::DATE_CREATED_FIELD);
-		$allocatedResources = gpc_get_string(self::ALLOCATED_RESOURCES_FIELD);
+		 $dateCreated = $_REQUEST[self::DATE_CREATED_FIELD];
+        $allocatedResources = $_REQUEST[self::ALLOCATED_RESOURCES_FIELD];
 
-		$table = db_get_table('mantis_project_version_table');
+        $table = db_get_table('mantis_project_version_table');
 
-		$query = "UPDATE $table
-				  SET 
-				    " . self::DATE_CREATED_FIELD . " = " . db_param() .",
-                    " . self::ALLOCATED_RESOURCES_FIELD . " = " . db_param() ."
-				  WHERE id=" . db_param();
-		db_query_bound($query, array($dateCreated, $date_released, $allocatedResources, $versionId));
+        $query = "UPDATE $table
+                          SET
+                            " . self::DATE_CREATED_FIELD . " = " . db_param() .",
+            " . self::ALLOCATED_RESOURCES_FIELD . " = " . db_param() ."
+                          WHERE id=" . db_param();
+        db_query_bound($query, array($dateCreated, $allocatedResources, $versionId));
 		
 		// release date
 		$released = gpc_get_string('released', null);
