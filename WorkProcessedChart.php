@@ -27,6 +27,7 @@ class WorkProcessedChart {
   
   private $startTimestamp;
   private $targetEndTimestamp;
+  private $actualEndTimestamp;
   private $workingDays;
   private $processedWorkByDate;
   private $processedWork;
@@ -51,6 +52,17 @@ class WorkProcessedChart {
     
     $this->startTimestamp = strtotime(version_get_field($version->id, BurnDownChartPlugin::DATE_CREATED_FIELD));
     $this->targetEndTimestamp = $version->date_order;
+
+    $this->actualEndTimestamp = strtotime(version_get_field($this->version->id, BurnDownChartPlugin::DATE_RELEASED_FIELD));
+    if ($this->actualEndTimestamp == 0) {
+      $this->actualEndTimestamp = null;
+    }
+
+    $this->devsEndTimestamp = strtotime(version_get_field($this->version->id, BurnDownChartPlugin::DEVS_END_DATE_FIELD));
+    if ($this->devsEndTimestamp == 0) {
+      $this->devsEndTimestamp = null;
+    }
+
     $this->workingDays = round(getWorkingDays($this->startTimestamp, $version->date_order));
     $elapsed_days = round(getWorkingDays($this->startTimestamp, $today));
     
@@ -73,8 +85,14 @@ class WorkProcessedChart {
       $remainingDaysBasedOnActual = ceil($remainingWork / $this->actualVelocity);
       $this->estimatedEndTimestampBasedOnActual = addWorkingDays($today, $remainingDaysBasedOnActual);
     }
+
+    if ($this->actualEndTimestamp != null) {
+      $this->estimatedEndTimestampBasedOnTheoric = $this->actualEndTimestamp;
+      $this->estimatedEndTimestampBasedOnActual = $this->actualEndTimestamp;
+    }
     
-    $this->chartEndTimestamp = max($this->estimatedEndTimestampBasedOnTheoric, $this->estimatedEndTimestampBasedOnActual, $this->targetEndTimestamp);
+    $this->chartEndTimestamp = max($this->estimatedEndTimestampBasedOnTheoric, $this->estimatedEndTimestampBasedOnActual, $this->targetEndTimestamp, $this->actualEndTimestamp);
+    $this->chartEndTimestamp = strtotime("+1 day", $this->chartEndTimestamp);
   }
   
   public function getChartData() {
@@ -90,6 +108,8 @@ class WorkProcessedChart {
     $this->addProcessedWorkLineToChart($chart);
     $this->addOptimalLineToChart($chart);
     $this->addTargetDateLineToChart($chart);
+    $this->addEndDateLineToChart($chart);
+    $this->addDevsEndLineToChart($chart);
     $this->addEstimatedLines($chart);
     
     return $chart;
@@ -192,6 +212,48 @@ class WorkProcessedChart {
     $chart->add_element($targetDateLine);
   }
   
+  private function addEndDateLineToChart(open_flash_chart $chart) {
+    if ($this->actualEndTimestamp == null) {
+      return;      
+    }
+    
+    $color = '#CCCCCC';
+    
+    $endDateIndex = $this->getDateIndex($this->actualEndTimestamp);
+    
+    $endDateLine = new scatter_line( $color, 2 );
+    $def = new hollow_dot();
+    $def->size(1)->halo_size(1);
+    $endDateLine->set_default_dot_style( $def );
+    $endDateLine->set_key(plugin_lang_get('endReleaseDate'), 10);
+    $endDateLine->set_values(array(
+        new scatter_value( $endDateIndex, 0 ),
+        new scatter_value( $endDateIndex, $this->totalWork )
+    ));
+    $chart->add_element($endDateLine);
+  }
+  
+  private function addDevsEndLineToChart(open_flash_chart $chart) {
+    if ($this->devsEndTimestamp == null) {
+      return;      
+    }
+    
+    $color = '#CCCCCC';
+    
+    $endDateIndex = $this->getDateIndex($this->devsEndTimestamp);
+    
+    $endDateLine = new scatter_line( $color, 2 );
+    $def = new hollow_dot();
+    $def->size(1)->halo_size(1);
+    $endDateLine->set_default_dot_style( $def );
+    $endDateLine->set_key(plugin_lang_get('developmentsEndDate'), 10);
+    $endDateLine->set_values(array(
+        new scatter_value( $endDateIndex, 0 ),
+        new scatter_value( $endDateIndex, $this->totalWork )
+    ));
+    $chart->add_element($endDateLine);
+  }
+  
   private function addEstimatedLines(open_flash_chart $chart) {
     if (date(BurnDownChartPlugin::SORTABLE_DATE_FORMAT, strtotime("today")) >= date(BurnDownChartPlugin::SORTABLE_DATE_FORMAT, $this->chartEndTimestamp)) {
       return; // release is closed
@@ -248,6 +310,6 @@ class WorkProcessedChart {
     	$i++;
     }
     
-    return $dateIndex;
+    return $dateIndex + 1;
   }
 }

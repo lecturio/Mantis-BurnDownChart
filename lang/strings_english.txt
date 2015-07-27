@@ -13,4 +13,5 @@
 	$s_plugin_BurnDownChart_optimalLine = 'Optimal line';
 	$s_plugin_BurnDownChart_estimatedBasedOnTheoric = 'Resource-based estimation';
 	$s_plugin_BurnDownChart_estimatedBasedOnActual = 'Velocity-based estimation';
-	
+	$s_plugin_BurnDownChart_endReleaseDate = 'Release date';
+	$s_plugin_BurnDownChart_developmentsEndDate = 'Devs end date';

@@ -146,6 +146,10 @@ function getProcessedWorkByDate($version) {
  * @return int new date timestamp
  */
 function addWorkingDays($date, $daysAmount) {
+  if ($daysAmount == 0) {
+  	return $date;
+  }
+
   $full_weeks = floor($daysAmount / 7);
   $included_days_off = $full_weeks * 2;
   $remaining_days = $daysAmount % 7;

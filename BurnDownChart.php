@@ -28,6 +28,7 @@ class BurnDownChartPlugin extends MantisPlugin {
 	const DATE_CREATED_FIELD = 'date_created';
 	const ALLOCATED_RESOURCES_FIELD = 'allocated_resources';
 	const DATE_RELEASED_FIELD = 'date_released';
+	const DEVS_END_DATE_FIELD = 'devs_end_date';
 	
 	const RESOLUTION_DATE_FIELD = 'Resolution_Date'; // resolution time
 	const INITIAL_ESTIMATE_FIELD = 'Initial_Estimate'; // Temps estimé initial (JH)
@@ -67,10 +68,23 @@ class BurnDownChartPlugin extends MantisPlugin {
 	public function getVersionEditExtensionHtml() {
 		$versionId = gpc_get_int('version_id');
 		$dateCreated = version_get_field($versionId, self::DATE_CREATED_FIELD);
+		$developmentsEndDate = version_get_field($versionId, self::DEVS_END_DATE_FIELD);
 		$allocatedResources = version_get_field($versionId, self::ALLOCATED_RESOURCES_FIELD);
 
 		ob_start();
 ?>
+<tr >
+	<td class="category">
+		<?php echo plugin_lang_get( 'developmentsEndDate' ) ?>
+	</td>
+	<td>
+		<input type="text" id="<?php echo self::DEVS_END_DATE_FIELD ?>" name="<?php echo self::DEVS_END_DATE_FIELD ?>" size="32" value="<?php echo (date_is_null($developmentsEndDate) ? '' : string_attribute($developmentsEndDate)) ?>" />
+		<?php
+			date_print_calendar('trigger_' . self::DEVS_END_DATE_FIELD);
+			date_finish_calendar(self::DEVS_END_DATE_FIELD, 'trigger_' . self::DEVS_END_DATE_FIELD);
+		?>
+	</td>
+</tr>
 <tr <?php echo helper_alternate_class() ?>>
 	<td class="category">
 		<?php echo plugin_lang_get( 'dateCreated' ) ?>
@@ -83,7 +97,7 @@ class BurnDownChartPlugin extends MantisPlugin {
 		?>
 	</td>
 </tr>
-<tr>
+<tr <?php echo helper_alternate_class() ?>>
 	<td class="category">
 		<?php echo plugin_lang_get( 'allocatedResources' ) ?>
 	</td>
@@ -99,6 +113,7 @@ class BurnDownChartPlugin extends MantisPlugin {
 		version_ensure_exists($versionId);
 
 		 $dateCreated = $_REQUEST[self::DATE_CREATED_FIELD];
+        $devsEndDate = $_REQUEST[self::DEVS_END_DATE_FIELD] == '' ? null : $_REQUEST[self::DEVS_END_DATE_FIELD];
         $allocatedResources = $_REQUEST[self::ALLOCATED_RESOURCES_FIELD];
 
         $table = db_get_table('mantis_project_version_table');
@@ -106,9 +121,10 @@ class BurnDownChartPlugin extends MantisPlugin {
         $query = "UPDATE $table
                           SET
                             " . self::DATE_CREATED_FIELD . " = " . db_param() .",
+                            " . self::DEVS_END_DATE_FIELD . " = " . db_param() .",
             " . self::ALLOCATED_RESOURCES_FIELD . " = " . db_param() ."
                           WHERE id=" . db_param();
-        db_query_bound($query, array($dateCreated, $allocatedResources, $versionId));
+        db_query_bound($query, array($dateCreated, $devsEndDate, $allocatedResources, $versionId));
 		
 		// release date
 		$released = gpc_get_string('released', null);
@@ -318,14 +334,18 @@ class BurnDownChartPlugin extends MantisPlugin {
 		'AddColumnSQL', array(
 				db_get_table('mantis_project_version_table'), self::DATE_CREATED_FIELD . ' DATE'
 		)
-  ), array(
-		'AddColumnSQL', array(
-				db_get_table('mantis_project_version_table'), self::ALLOCATED_RESOURCES_FIELD . ' FLOAT'
-		)
-), array(
-		'AddColumnSQL', array(
-				db_get_table('mantis_project_version_table'), self::DATE_RELEASED_FIELD . ' DATE'
-		)
-));
+		  ), array(
+				'AddColumnSQL', array(
+						db_get_table('mantis_project_version_table'), self::ALLOCATED_RESOURCES_FIELD . ' FLOAT'
+				)
+		), array(
+				'AddColumnSQL', array(
+						db_get_table('mantis_project_version_table'), self::DATE_RELEASED_FIELD . ' DATE'
+				)
+		), array(
+				'AddColumnSQL', array(
+						db_get_table('mantis_project_version_table'), self::DEVS_END_DATE_FIELD . ' DATE'
+				)
+		));
 	}
 }
