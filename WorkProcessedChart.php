@@ -28,15 +28,15 @@ class WorkProcessedChart {
   private $startTimestamp;
   private $targetEndTimestamp;
   private $actualEndTimestamp;
-  private $workingDays;
   private $processedWorkByDate;
   private $processedWork;
   private $remainingWork;
   private $issues;
   private $totalWork;
   
-  private $theoricVelocity;
   // TODO : have a VersionInfos object
+  public $workingDaysOfDevelopment;
+  public $theoricVelocity;
   public $actualVelocity;
   
   private $estimatedEndTimestampBasedOnTheoric;
@@ -63,10 +63,10 @@ class WorkProcessedChart {
       $this->devsEndTimestamp = null;
     }
 
-    $this->workingDays = round(getWorkingDays($this->startTimestamp, $version->date_order));
+    $this->workingDaysOfDevelopment = round(getWorkingDays($this->startTimestamp, $this->devsEndTimestamp == null ? $version->date_order : $this->devsEndTimestamp));
     $elapsed_days = round(getWorkingDays($this->startTimestamp, $today));
     
-    $this->processedWorkByDate  = getProcessedWorkByDate($version);
+    $this->processedWorkByDate  = getProcessedWorkByDate($version, $this->startTimestamp);
     $this->processedWork = array_sum(array_values($this->processedWorkByDate));
     
     $this->issues = getIssuesByVersion($version);
@@ -105,12 +105,12 @@ class WorkProcessedChart {
     }
     
     $chart = constructChart(plugin_lang_get('chartTitle'), $this->totalWork, $x_axis);
-    $this->addProcessedWorkLineToChart($chart);
     $this->addOptimalLineToChart($chart);
     $this->addTargetDateLineToChart($chart);
     $this->addEndDateLineToChart($chart);
     $this->addDevsEndLineToChart($chart);
     $this->addEstimatedLines($chart);
+    $this->addProcessedWorkLineToChart($chart);
     
     return $chart;
   }
@@ -184,10 +184,10 @@ class WorkProcessedChart {
     $optimalLine->set_colour('#018F00');
     $optimalLine->set_key(plugin_lang_get('optimalLine'), 10);
     
-    $optimalManDaysPerDay = $this->totalWork / $this->workingDays;
-    $optimalLineData = array();
-    for ($i = 0; $i <= $this->workingDays; $i++) {
-    	$optimalLineData[] = round($this->totalWork - $i * $optimalManDaysPerDay, 4);
+    $optimalManDaysPerDay = $this->totalWork / ($this->workingDaysOfDevelopment + 1);
+    $optimalLineData = array($this->totalWork);
+    for ($i = 0; $i <= $this->workingDaysOfDevelopment; $i++) {
+    	$optimalLineData[] = round($this->totalWork - ($i + 1) * $optimalManDaysPerDay, 4);
     }
     $optimalLine->set_values($optimalLineData);
     
@@ -269,7 +269,7 @@ class WorkProcessedChart {
     $theoricLine->set_key(plugin_lang_get('estimatedBasedOnTheoric'), 10);
     $theoricData = array();
     for ($i = $today_index; $i < count($this->getXAxisTimestamps()); $i++) {
-    	$theoricData[] = new scatter_value( $i + 1, max(0, round($this->remainingWork - (($i - $today_index) * $this->theoricVelocity), 4)) );
+    	$theoricData[] = new scatter_value( $i, max(0, round($this->remainingWork - (($i - $today_index) * $this->theoricVelocity), 4)) );
     }
     
     $theoricLine->set_values($theoricData);
@@ -284,7 +284,7 @@ class WorkProcessedChart {
       $actualLine->set_key(plugin_lang_get('estimatedBasedOnActual'), 10);
       $actualData = array();
       for ($i = $today_index; $i < count($this->getXAxisTimestamps()); $i++) {
-      	$actualData[] = new scatter_value( $i + 1, max(0, round($this->remainingWork - (($i - $today_index) * $this->actualVelocity), 4)) );
+      	$actualData[] = new scatter_value( $i, max(0, round($this->remainingWork - (($i - $today_index) * $this->actualVelocity), 4)) );
       }
       
       $actualLine->set_values($actualData);
@@ -293,7 +293,7 @@ class WorkProcessedChart {
   }
   
   private function isDeadlineReached() {
-    return $this->chartEndTimestamp > $this->targetEndTimestamp;
+    return $this->chartEndTimestamp > $this->devsEndTimestamp;
   }
   
   private function getDateIndex($dateTimestamp) {

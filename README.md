@@ -30,6 +30,7 @@ Ensure you have set the config "$g_roadmap_view_threshold" to something good (e.
 6. For each task to add to the sprint, set the target version, the "estimated work" and keep the "remaining" & "spent" fields updated during the sprint.
 
 ## Release History
+- 0.4 development end date and more infos on chart (theoric velocity, sprint date)
 - 0.3 date released and time spent
 - 0.2 added estimated lines and customisable field names
 - 0.1 not fully tested and just an alpha version.

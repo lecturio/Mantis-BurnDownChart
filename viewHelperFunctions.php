@@ -19,7 +19,7 @@
  * @license http://www.gnu.org/licenses/gpl.html
  */
 
-function printVersionHeader($version, $velocity) { 
+function printVersionHeader($version, $velocity, $theoricVelocity, $duration) { 
 	$projectId = $version->project_id;
 	$versionId = $version->id;
 	$versionName = $version->version;
@@ -36,7 +36,8 @@ function printVersionHeader($version, $velocity) {
 	}
 
 	echo '<br />', $releaseTitle, $scheduledReleaseDate, lang_get('word_separator'), print_bracket_link('view_all_set.php?type=1&temporary=y&' . FILTER_PROPERTY_PROJECT_ID . '=' . $projectId . '&' . filter_encode_field_and_value(FILTER_PROPERTY_TARGET_VERSION, $versionName), lang_get('view_bugs_link'));
-	echo '<span style="float: right; font-size: 1em;"> Velocity: '. sprintf('%.2f', $velocity) .' </span>';
+	echo '<span style="text-align: right; font-size: 1em; position: absolute; right: 0; bottom: 0;"> ';
+	echo 'Theoric velocity: '. sprintf('%.1f', $theoricVelocity) .'<br /> Actual Velocity: '. sprintf('%.2f', $velocity) .'<br /> Duration: '. sprintf('%d', $duration) .' days</span>';
 	echo '<br />';
 	echo '<hr />';
 }

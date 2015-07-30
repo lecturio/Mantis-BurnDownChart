@@ -106,7 +106,7 @@ function getTotalStoryPoints($issues) {
 	return $manDays;
 }
 
-function getProcessedWorkByDate($version) {
+function getProcessedWorkByDate($version, $minDateTimestamp = null) {
 	version_ensure_exists($version->id);
 
 	$bugTable = db_get_table('mantis_bug_table');
@@ -123,12 +123,17 @@ function getProcessedWorkByDate($version) {
 							sbt.project_id=" . db_param() . "
 							AND sbt.target_version=" . db_param() . "
 							AND sbt.status >= " . RESOLVED . "
+							AND cft.value <> ''
 							ORDER BY sbt.status ASC, sbt.last_updated DESC";
 	$result = db_query_bound($query, array($version->project_id, $version->version));
 
 	$resolvedIssues = array();
 	while ($row = db_fetch_array($result)) {
 		$resolvedDate = date(config_get('short_date_format'), strtotime($row['resolvedDate']));
+		if ($minDateTimestamp != null && strtotime($row['resolvedDate']) < $minDateTimestamp) {
+			$resolvedDate = date(config_get('short_date_format'), $minDateTimestamp);
+		}
+
 		$manDays = custom_field_get_value($manDaysField, $row['id']);
 		if (isset($resolvedIssues[$resolvedDate])) {
 			$resolvedIssues[$resolvedDate] += $manDays;

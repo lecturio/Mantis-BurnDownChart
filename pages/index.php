@@ -54,14 +54,18 @@
 
   $workProcessedChartData = null;
   $version = $versionId ? version_get($versionId) : null;
-  $velocity = '?';
+  $actualVelocity = '?';
+  $theoricVelocity = '?';
+  $duration = '?';
   if ($version != null) {
   	access_ensure_project_level(config_get('roadmap_view_threshold'), $version->project_id);
   	
     $workProcessedChart = WorkProcessedChart::forVersion($version);
     $workProcessedChartData = $workProcessedChart->getChartData()->toPrettyString();
     
-    $velocity = $workProcessedChart->actualVelocity;
+    $actualVelocity = $workProcessedChart->actualVelocity;
+    $theoricVelocity = $workProcessedChart->theoricVelocity;
+    $duration = $workProcessedChart->workingDaysOfDevelopment;
   }
   
 ?>
@@ -104,8 +108,8 @@
 <?php 
   if ($version != null) {
 ?>
-<span class="pagetitle">
-  <?php echo printVersionHeader($version, $velocity) ?>
+<span class="pagetitle" style="position: relative; display: block; text-align: left;">
+  <?php echo printVersionHeader($version, $actualVelocity, $theoricVelocity, $duration) ?>
 </span>
 
 <div class="center">
