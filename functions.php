@@ -98,7 +98,7 @@ function getIssuesByVersion($version) {
 
 function getTotalStoryPoints($issues) {
 	$manDays = 0;
-	$customFieldId = custom_field_get_id_from_name(BurnDownChartPlugin::MAN_DAYS_FIELD);
+	$customFieldId = custom_field_get_id_from_name(BurnDownChartPlugin::INITIAL_ESTIMATE_FIELD);
 	foreach ($issues as $issue) {
 		$manDays += custom_field_get_value($customFieldId, $issue['id']);
 	}
@@ -106,14 +106,14 @@ function getTotalStoryPoints($issues) {
 	return $manDays;
 }
 
-function getNumberOfResolvedIssuesByDate($version) {
+function getProcessedWorkByDate($version, $minDateTimestamp = null) {
 	version_ensure_exists($version->id);
 
 	$bugTable = db_get_table('mantis_bug_table');
 	$relationTable = db_get_table('mantis_bug_relationship_table');
 	$customFieldsTable = db_get_table('mantis_custom_field_string_table');
-	$resolvedDateField = custom_field_get_id_from_name(BurnDownChartPlugin::DATE_RESOLVED_FIELD);
-	$manDaysField = custom_field_get_id_from_name(BurnDownChartPlugin::MAN_DAYS_FIELD);
+	$resolvedDateField = custom_field_get_id_from_name(BurnDownChartPlugin::RESOLUTION_DATE_FIELD);
+	$manDaysField = custom_field_get_id_from_name(BurnDownChartPlugin::INITIAL_ESTIMATE_FIELD);
 
 	$query = "SELECT DATE(FROM_UNIXTIME(cft.value)) AS resolvedDate, sbt.id FROM $bugTable AS sbt
 						LEFT JOIN $relationTable ON sbt.id=$relationTable.destination_bug_id AND $relationTable.relationship_type=2
@@ -122,13 +122,18 @@ function getNumberOfResolvedIssuesByDate($version) {
 						WHERE
 							sbt.project_id=" . db_param() . "
 							AND sbt.target_version=" . db_param() . "
-							AND sbt.status = " . RESOLVED . "
+							AND sbt.status >= " . RESOLVED . "
+							AND cft.value <> ''
 							ORDER BY sbt.status ASC, sbt.last_updated DESC";
 	$result = db_query_bound($query, array($version->project_id, $version->version));
 
 	$resolvedIssues = array();
 	while ($row = db_fetch_array($result)) {
 		$resolvedDate = date(config_get('short_date_format'), strtotime($row['resolvedDate']));
+		if ($minDateTimestamp != null && strtotime($row['resolvedDate']) < $minDateTimestamp) {
+			$resolvedDate = date(config_get('short_date_format'), $minDateTimestamp);
+		}
+
 		$manDays = custom_field_get_value($manDaysField, $row['id']);
 		if (isset($resolvedIssues[$resolvedDate])) {
 			$resolvedIssues[$resolvedDate] += $manDays;
@@ -138,6 +143,29 @@ function getNumberOfResolvedIssuesByDate($version) {
 	}
 
 	return $resolvedIssues;
+}
+
+/**
+ * @param int $date (unix timestmap)
+ * @param int $daysAmount number of working days to be added
+ * @return int new date timestamp
+ */
+function addWorkingDays($date, $daysAmount) {
+  if ($daysAmount == 0) {
+  	return $date;
+  }
+
+  $full_weeks = floor($daysAmount / 7);
+  $included_days_off = $full_weeks * 2;
+  $remaining_days = $daysAmount % 7;
+  if ($remaining_days > 0) {
+  	$day_index = (date("N", $date)); // monday = 1, sunday = 7
+  	$included_days_off = $included_days_off + min(max($day_index + $remaining_days - 5, 0), 2);
+  }
+  
+  $totalDaysAdded = ($daysAmount + $included_days_off);
+  
+  return strtotime("+" . $totalDaysAdded . " days", $date);
 }
 
 /**

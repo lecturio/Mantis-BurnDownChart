@@ -19,7 +19,7 @@
  * @license http://www.gnu.org/licenses/gpl.html
  */
 
-function printVersionHeader($version) {
+function printVersionHeader($version, $velocity, $theoricVelocity, $duration) { 
 	$projectId = $version->project_id;
 	$versionId = $version->id;
 	$versionName = $version->version;
@@ -35,11 +35,11 @@ function printVersionHeader($version) {
 		$scheduledReleaseDate = '';
 	}
 
-	echo '<tt>';
-	echo '<br />', $releaseTitle, $scheduledReleaseDate, lang_get('word_separator'), print_bracket_link('view_all_set.php?type=1&temporary=y&' . FILTER_PROPERTY_PROJECT_ID . '=' . $projectId . '&' . filter_encode_field_and_value(FILTER_PROPERTY_TARGET_VERSION, $versionName), lang_get('view_bugs_link')), '<br />';
-
-	$t_release_title_without_hyperlinks = $projectName . ' - ' . $versionName . $scheduledReleaseDate;
-	echo utf8_str_pad('', utf8_strlen($t_release_title_without_hyperlinks), '='), '<br />';
+	echo '<br />', $releaseTitle, $scheduledReleaseDate, lang_get('word_separator'), print_bracket_link('view_all_set.php?type=1&temporary=y&' . FILTER_PROPERTY_PROJECT_ID . '=' . $projectId . '&' . filter_encode_field_and_value(FILTER_PROPERTY_TARGET_VERSION, $versionName), lang_get('view_bugs_link'));
+	echo '<span style="text-align: right; font-size: 1em; position: absolute; right: 0; bottom: 0;"> ';
+	echo 'Theoric velocity: '. sprintf('%.1f', $theoricVelocity) .'<br /> Actual Velocity: '. sprintf('%.2f', $velocity) .'<br /> Duration: '. sprintf('%d', $duration) .' days</span>';
+	echo '<br />';
+	echo '<hr />';
 }
 
 function constructChart($versionName, $totalStoryPoints, $xAxisData) {
@@ -47,6 +47,9 @@ function constructChart($versionName, $totalStoryPoints, $xAxisData) {
 
 	$y = new y_axis();
 	$y->set_range(0, $totalStoryPoints, 1);
+	
+	$y_right = new y_axis();
+	$y_right->set_range(0, 1, 1);
 
 	$xLabels = new x_axis_labels();
 	$xLabels->set_steps(1);
@@ -62,6 +65,7 @@ function constructChart($versionName, $totalStoryPoints, $xAxisData) {
 	$chart = new open_flash_chart();
 	$chart->set_title($title);
 	$chart->add_y_axis($y);
+	$chart->set_y_axis_right($y_right);
 	$chart->set_x_axis($x);
 
 	return $chart;
