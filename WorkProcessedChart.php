@@ -74,7 +74,7 @@ class WorkProcessedChart {
     $this->remainingWork = $this->totalWork - $this->processedWork;
     
     $theoric_resources = version_get_field($this->version->id, BurnDownChartPlugin::ALLOCATED_RESOURCES_FIELD);
-    $this->theoricVelocity = $theoric_resources == null ? 1 : $theoric_resources;
+    $this->theoricVelocity = is_null($theoric_resources) || $theoric_resources == 0  ? 1 : $theoric_resources;
     $this->actualVelocity = $elapsed_days > 0 ? $this->processedWork / $elapsed_days : 0;
     
     $remainingWork = $this->totalWork - $this->processedWork;
