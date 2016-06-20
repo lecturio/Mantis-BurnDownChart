@@ -21,6 +21,8 @@
 
 //error_reporting(E_ALL | E_STRICT);
 
+require dirname(__FILE__) . '/functions.php';
+
 class BurnDownChartPlugin extends MantisPlugin {
   
     const SORTABLE_DATE_FORMAT = 'Y-m-d';
@@ -67,9 +69,9 @@ class BurnDownChartPlugin extends MantisPlugin {
 
 	public function getVersionEditExtensionHtml() {
 		$versionId = gpc_get_int('version_id');
-		$dateCreated = version_get_field($versionId, self::DATE_CREATED_FIELD);
-		$developmentsEndDate = version_get_field($versionId, self::DEVS_END_DATE_FIELD);
-		$allocatedResources = version_get_field($versionId, self::ALLOCATED_RESOURCES_FIELD);
+		$dateCreated = getVersionFieldOrNull($versionId, self::DATE_CREATED_FIELD);
+		$developmentsEndDate = getVersionFieldOrNull($versionId, self::DEVS_END_DATE_FIELD);
+		$allocatedResources = getVersionFieldOrNull($versionId, self::ALLOCATED_RESOURCES_FIELD);
 
 		ob_start();
 ?>
@@ -112,9 +114,9 @@ class BurnDownChartPlugin extends MantisPlugin {
 	public function onVersionUpdate($event, $versionId) {
 		version_ensure_exists($versionId);
 
-		 $dateCreated = $_REQUEST[self::DATE_CREATED_FIELD];
+		$dateCreated = $_REQUEST[self::DATE_CREATED_FIELD] == '' ? null : $_REQUEST[self::DATE_CREATED_FIELD];
         $devsEndDate = $_REQUEST[self::DEVS_END_DATE_FIELD] == '' ? null : $_REQUEST[self::DEVS_END_DATE_FIELD];
-        $allocatedResources = $_REQUEST[self::ALLOCATED_RESOURCES_FIELD];
+        $allocatedResources = $_REQUEST[self::ALLOCATED_RESOURCES_FIELD] == '' ? null : $_REQUEST[self::ALLOCATED_RESOURCES_FIELD];
 
         $table = db_get_table('mantis_project_version_table');
 
@@ -128,7 +130,7 @@ class BurnDownChartPlugin extends MantisPlugin {
 		
 		// release date
 		$released = gpc_get_string('released', null);
-		$date_released = version_get_field($versionId, self::DATE_RELEASED_FIELD);
+		$date_released = getVersionFieldOrNull($versionId, self::DATE_RELEASED_FIELD);
 		if ($released == null) {
 			$date_released = null;
 		} else if (strlen($date_released) == 0) {

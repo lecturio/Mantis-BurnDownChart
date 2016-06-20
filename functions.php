@@ -218,3 +218,13 @@ function getWorkingDays($startDate, $endDate)
 
 	return $workingDays;
 }
+
+function getVersionFieldOrNull($versionId, $fieldName) {
+	$row = version_cache_row( $versionId );
+
+    if ( isset( $row[$fieldName] ) ) {
+        return $row[$fieldName];
+    }
+
+    return null;
+}
