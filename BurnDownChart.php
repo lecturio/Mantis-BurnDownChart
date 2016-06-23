@@ -163,11 +163,6 @@ class BurnDownChartPlugin extends MantisPlugin {
 		$id = custom_field_get_id_from_name(self::RESOLUTION_DATE_FIELD);
 		if ($bugData->status == RESOLVED) {
 			custom_field_set_value($id, $bugId, time());
-		} else {
-			// delete value (set it to null)
-			if (custom_field_get_value($id, $bugId)) {
-				custom_field_set_value($id, $bugId, null);
-			}
 		}
 	}
 
