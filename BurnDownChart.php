@@ -21,7 +21,7 @@
 
 //error_reporting(E_ALL | E_STRICT);
 
-require dirname(__FILE__) . '/functions.php';
+require_once(dirname(__FILE__) . '/functions.php');
 
 class BurnDownChartPlugin extends MantisPlugin {
   

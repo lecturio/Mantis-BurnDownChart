@@ -26,12 +26,13 @@
   html_page_top1( plugin_lang_get( 'title' ) );
   html_page_top2();
 
-  require dirname(__FILE__) . '/../functions.php';
-  require dirname(__FILE__) . '/../viewHelperFunctions.php';
-  require dirname(__FILE__) . '/../files/open_flash_chart/php-ofc-library/open-flash-chart.php';
+  require_once(dirname(__FILE__) . '/../functions.php');
+  
+  require_once(dirname(__FILE__) . '/../viewHelperFunctions.php');
+  require_once dirname(__FILE__) . '/../files/open_flash_chart/php-ofc-library/open-flash-chart.php';
   require_once dirname(__FILE__) . '/../files/open_flash_chart/php-ofc-library/ofc_line.php';
   require_once dirname(__FILE__) . '/../files/open_flash_chart/php-ofc-library/ofc_line_dot.php';
-  require dirname(__FILE__) . '/../WorkProcessedChart.php';
+  require_once dirname(__FILE__) . '/../WorkProcessedChart.php';
 
   $versionsByProjectId = getVersionsByProjectId();
   $projectCount = count($versionsByProjectId);
