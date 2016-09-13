@@ -10,7 +10,7 @@ class WorkProcessedChart {
       return null;
     }
 
-    $dateCreated = version_get_field($version->id, BurnDownChartPlugin::DATE_CREATED_FIELD);
+    $dateCreated = getVersionFieldOrNull($version->id, BurnDownChartPlugin::DATE_CREATED_FIELD);
     if ($dateCreated == null || $dateCreated == '') {
       return null;
     }
@@ -50,15 +50,15 @@ class WorkProcessedChart {
     
     $this->version = $version;
     
-    $this->startTimestamp = strtotime(version_get_field($version->id, BurnDownChartPlugin::DATE_CREATED_FIELD));
+    $this->startTimestamp = strtotime(getVersionFieldOrNull($version->id, BurnDownChartPlugin::DATE_CREATED_FIELD));
     $this->targetEndTimestamp = $version->date_order;
 
-    $this->actualEndTimestamp = strtotime(version_get_field($this->version->id, BurnDownChartPlugin::DATE_RELEASED_FIELD));
+    $this->actualEndTimestamp = strtotime(getVersionFieldOrNull($this->version->id, BurnDownChartPlugin::DATE_RELEASED_FIELD));
     if ($this->actualEndTimestamp == 0) {
       $this->actualEndTimestamp = null;
     }
 
-    $this->devsEndTimestamp = strtotime(version_get_field($this->version->id, BurnDownChartPlugin::DEVS_END_DATE_FIELD));
+    $this->devsEndTimestamp = strtotime(getVersionFieldOrNull($this->version->id, BurnDownChartPlugin::DEVS_END_DATE_FIELD));
     if ($this->devsEndTimestamp == 0) {
       $this->devsEndTimestamp = null;
     }
@@ -73,8 +73,8 @@ class WorkProcessedChart {
     $this->totalWork = getTotalStoryPoints($this->issues);
     $this->remainingWork = $this->totalWork - $this->processedWork;
     
-    $theoric_resources = version_get_field($this->version->id, BurnDownChartPlugin::ALLOCATED_RESOURCES_FIELD);
-    $this->theoricVelocity = $theoric_resources == null ? 1 : $theoric_resources;
+    $theoric_resources = getVersionFieldOrNull($this->version->id, BurnDownChartPlugin::ALLOCATED_RESOURCES_FIELD);
+    $this->theoricVelocity = is_null($theoric_resources) || $theoric_resources == 0  ? 1 : $theoric_resources;
     $this->actualVelocity = $elapsed_days > 0 ? $this->processedWork / $elapsed_days : 0;
     
     $remainingWork = $this->totalWork - $this->processedWork;
